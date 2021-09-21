@@ -1,0 +1,9 @@
+image: coltyangyl/thucst-compiler-21:test0
+
+test:
+  script:
+    - bash ./prepare.sh
+    - if [ -d 'minidecaf-tests' ]; then rm -r minidecaf-tests; fi
+    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@git.tsinghua.edu.cn/compiler-21/minidecaf-tests.git
+    - cd ./minidecaf-tests && PROJ_PATH=.. USE_PARALLEL=false ./check.sh
+

@@ -183,6 +183,22 @@ void Translation::visit(ast::NegExpr *e) {
     e->ATTR(val) = tr->genNeg(e->e->ATTR(val));
 }
 
+/* Translating an ast::BitNot node.
+ */
+void Translation::visit(ast::BitNotExpr *e) {
+    e->e->accept(this);
+
+    e->ATTR(val) = tr->genBNot(e->e->ATTR(val));
+}
+
+/* Translating an ast::BitNot node.
+ */
+void Translation::visit(ast::NotExpr *e) {
+    e->e->accept(this);
+
+    e->ATTR(val) = tr->genLNot(e->e->ATTR(val));
+}
+
 /* Translating an ast::LvalueExpr node.
  *
  * NOTE:

@@ -94,7 +94,7 @@ void scan_end();
 %nterm<mind::ast::Program* > Program FoDList
 %nterm<mind::ast::FuncDefn* > FuncDefn
 %nterm<mind::ast::Type*> Type
-%nterm<mind::ast::Statement*> Stmt  ReturnStmt ExprStmt IfStmt  CompStmt WhileStmt 
+%nterm<mind::ast::Statement*> Stmt  ReturnStmt ExprStmt IfStmt  CompStmt WhileStmt DeclStmt
 %nterm<mind::ast::Expr*> Expr
 /*   SUBSECTION 2.2: associativeness & precedences */
 %nonassoc QUESTION
@@ -152,6 +152,7 @@ Stmt        : ReturnStmt {$$ = $1;}|
               IfStmt     {$$ = $1;}|
               WhileStmt  {$$ = $1;}|
               CompStmt   {$$ = $1;}|
+              DeclStmt   {$$ = $1;}|
               BREAK SEMICOLON  
                 {$$ = new ast::BreakStmt(POS(@1));} |
               SEMICOLON
@@ -167,6 +168,10 @@ IfStmt      : IF LPAREN Expr RPAREN Stmt
                 { $$ = new ast::IfStmt($3, $5, new ast::EmptyStmt(POS(@5)), POS(@1)); }
             | IF LPAREN Expr RPAREN Stmt ELSE Stmt
                 { $$ = new ast::IfStmt($3, $5, $7, POS(@1)); }
+            ;
+
+DeclStmt    : Type IDENTIFIER SEMICOLON { $$=NULL;}
+            | Type IDENTIFIER ASSIGN ExprStmt {$$=NULL;}
             ;
 
 ReturnStmt  : RETURN Expr SEMICOLON

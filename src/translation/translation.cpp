@@ -160,12 +160,58 @@ void Translation::visit(ast::ReturnStmt *s) {
     tr->genReturn(s->e->ATTR(val));
 }
 
+/* Translating an ast::EquExpr node.
+ */
+void Translation::visit(ast::EquExpr *e) {
+    e->e1->accept(this);
+    e->e2->accept(this);
+    e->ATTR(val) = tr->genEqu(e->e1->ATTR(val), e->e2->ATTR(val));
+}
+
+/* Translating an ast::NeqExpr node.
+ */
+void Translation::visit(ast::NeqExpr *e) {
+    e->e1->accept(this);
+    e->e2->accept(this);
+    e->ATTR(val) = tr->genNeq(e->e1->ATTR(val), e->e2->ATTR(val));
+}
+
+/* Translating an ast::AndExpr node.
+ */
+void Translation::visit(ast::AndExpr *e) {
+    e->e1->accept(this);
+    e->e2->accept(this);
+    e->ATTR(val) = tr->genLAnd(e->e1->ATTR(val), e->e2->ATTR(val));
+}
+/* Translating an ast::OrExpr node.
+ */
+void Translation::visit(ast::OrExpr *e) {
+    e->e1->accept(this);
+    e->e2->accept(this);
+    e->ATTR(val) = tr->genLOr(e->e1->ATTR(val), e->e2->ATTR(val));
+}
+
+/* Translating an ast::GeqExpr node.
+ */
+void Translation::visit(ast::GeqExpr *e) {
+    e->e1->accept(this);
+    e->e2->accept(this);
+    e->ATTR(val) = tr->genGeq(e->e1->ATTR(val), e->e2->ATTR(val));
+}
+
+/* Translating an ast::GrtExpr node.
+ */
+void Translation::visit(ast::GrtExpr *e) {
+    e->e1->accept(this);
+    e->e2->accept(this);
+    e->ATTR(val) = tr->genGtr(e->e1->ATTR(val), e->e2->ATTR(val));
+}
+
 /* Translating an ast::AddExpr node.
  */
 void Translation::visit(ast::AddExpr *e) {
     e->e1->accept(this);
     e->e2->accept(this);
-
     e->ATTR(val) = tr->genAdd(e->e1->ATTR(val), e->e2->ATTR(val));
 }
 

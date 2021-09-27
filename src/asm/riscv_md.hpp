@@ -79,11 +79,13 @@ struct RiscvReg {
  * 
  */
 struct RiscvInstr : public Instr {
-
     enum OpCode {
         // assembler directives
         COMMENT,
         // instructions/pseudo instructions
+        AND,
+        OR,
+        XOR,
         ADD,
         SUB,
         MUL,
@@ -99,6 +101,11 @@ struct RiscvInstr : public Instr {
         MOVE,
         NOT, //BNOT
         SEQZ, //LNOT
+        SNEZ, 
+        SLT,
+        SLTU,
+        SGT,
+        SGE,
         // You could add other instructions/pseudo instructions here
     } op_code; // operation code
 

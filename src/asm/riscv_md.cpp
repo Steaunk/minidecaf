@@ -227,9 +227,40 @@ void RiscvDesc::emitTac(Tac *t) {
     case Tac::LNOT:
         emitUnaryTac(RiscvInstr::SEQZ, t);
         break;
-
+    
     case Tac::NEG:
         emitUnaryTac(RiscvInstr::NEG, t);
+        break;
+
+    case Tac::EQU:
+        emitBinaryTac(RiscvInstr::SUB, t);
+        t->op1 = t->op0;
+        emitUnaryTac(RiscvInstr::SEQZ, t);
+        break;
+    
+    case Tac::NEQ:
+        emitBinaryTac(RiscvInstr::SUB, t);
+        t->op1 = t->op0;
+        emitUnaryTac(RiscvInstr::SNEZ, t);
+        break;
+        
+
+    case Tac::GEQ:
+        emitBinaryTac(RiscvInstr::SLT, t);
+        t->op1 = t->op0;
+        emitUnaryTac(RiscvInstr::SEQZ, t);
+        break;
+
+    case Tac::GTR:
+        emitBinaryTac(RiscvInstr::SGT, t);
+        break;
+    
+    case Tac::LAND:
+        emitBinaryTac(RiscvInstr::AND, t);
+        break;
+    
+    case Tac::LOR:
+        emitBinaryTac(RiscvInstr::OR, t);
         break;
     
     case Tac::ADD:
@@ -435,8 +466,8 @@ void RiscvDesc::emitInstr(RiscvInstr *i) {
     case RiscvInstr::COMMENT:
         emit(EMPTY_STR, NULL, i->comment);
         return;
-
-    case RiscvInstr::LI:
+    
+   case RiscvInstr::LI:
         oss << "li" << i->r0->name << ", " << i->i;
         break;
 
@@ -450,6 +481,10 @@ void RiscvDesc::emitInstr(RiscvInstr *i) {
 
     case RiscvInstr::SEQZ:
         oss << "seqz" << i->r0->name << ", " << i->r1->name;
+        break;
+
+    case RiscvInstr::SNEZ:
+        oss << "snez" << i->r0->name << ", " << i->r1->name;
         break;
 
     case RiscvInstr::MOVE:
@@ -467,7 +502,31 @@ void RiscvDesc::emitInstr(RiscvInstr *i) {
     case RiscvInstr::RET:
         oss << "ret";
         break;
+
+    case RiscvInstr::AND:
+        oss << "and" << i->r0->name << ", " << i->r1->name << "," << i->r2->name;
+        break;
     
+    case RiscvInstr::OR:
+        oss << "or" << i->r0->name << ", " << i->r1->name << "," << i->r2->name;
+        break; 
+    
+    case RiscvInstr::SLT:
+        oss << "slt" << i->r0->name << ", " << i->r1->name << "," << i->r2->name;
+        break;
+    
+    case RiscvInstr::SLTU:
+        oss << "sltu" << i->r0->name << ", " << i->r1->name << "," << i->r2->name;
+        break;
+
+    case RiscvInstr::SGT:
+        oss << "sgt" << i->r0->name << ", " << i->r1->name << "," << i->r2->name;
+        break;
+    
+    case RiscvInstr::XOR:
+        oss << "xor" << i->r0->name << ", " << i->r0->name << "," <<  "0x1";
+        break;
+
     case RiscvInstr::ADD:
         oss << "add" << i->r0->name << ", " << i->r1->name << ", " << i->r2->name;
         break;

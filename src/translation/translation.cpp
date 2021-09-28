@@ -287,6 +287,7 @@ void Translation::visit(ast::NotExpr *e) {
  *   different Lvalue kinds need different translation
  */
 void Translation::visit(ast::LvalueExpr *e) {
+    //e->e->
     // TODO
 }
 
@@ -312,6 +313,7 @@ void Translation::visit(ast::VarRef *ref) {
  */
 void Translation::visit(ast::VarDecl *decl) {
     // TODO
+    decl->ATTR(sym)->attachTemp(tr->getNewTempI4());
 }
 
 /* Translates an entire AST into a Piece list.
@@ -323,7 +325,6 @@ void Translation::visit(ast::VarDecl *decl) {
  */
 Piece *MindCompiler::translate(ast::Program *tree) {
     TransHelper *helper = new TransHelper(md);
-
     tree->accept(new Translation(helper));
 
     return helper->getPiece();

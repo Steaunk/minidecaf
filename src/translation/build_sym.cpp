@@ -164,6 +164,16 @@ void SemPass1::visit(ast::VarDecl *vdecl) {
     vdecl->type->accept(this);
     t = vdecl->type->ATTR(type);
 
+    vdecl->ATTR(sym) = new Variable(vdecl->name, t, vdecl->getLocation());
+        
+    Symbol *s = scopes->lookup(vdecl->name, vdecl->getLocation());
+    if(s != NULL){
+        issue(vdecl->getLocation(),
+            new DeclConflictError(vdecl->name, s)
+        );
+    }
+    scopes->declare(vdecl->ATTR(sym));
+
     // TODO: Add a new symbol to a scope
     // 1. Create a new `Variable` symbol
     // 2. Check for conflict in `scopes`, which is a global variable refering to

@@ -324,8 +324,9 @@ issue_error_type:
  *   decl     - the ast::VarDecl node
  */
 void SemPass2::visit(ast::VarDecl *decl) {
-    if (decl->init)
+    if (decl->init){
         decl->init->accept(this);
+    }
 }
 
 /* Visits an ast::AssignStmt node.

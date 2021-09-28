@@ -84,7 +84,6 @@ void MindCompiler::compile(const char *input, std::ostream &result) {
         result.flush();
         return;
     }
-
     // translating to linear IR
     tac::Piece *ir = translate(tree);
 
@@ -94,7 +93,6 @@ void MindCompiler::compile(const char *input, std::ostream &result) {
         result.flush();
         return;
     }
-
     // translating to assembly code (now let's go to MipsDesc::emitPieces)
     md->emitPieces(tree->ATTR(gscope), ir, result);
 

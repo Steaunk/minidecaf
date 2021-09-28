@@ -94,6 +94,7 @@ IDENTIFIER    ([A-Za-z][_0-9A-Za-z]*)
 "%"          { return yy::parser::make_MOD  (loc);       }
 "~"          { return yy::parser::make_BNOT  (loc);       }
 "!"          { return yy::parser::make_LNOT  (loc);       }
+"="          { return yy::parser::make_ASSIGN (loc);  }
 "if"         { return yy::parser::make_IF  (loc);       }
 "else"         { return yy::parser::make_ELSE  (loc);       }
 "while"       { return yy::parser::make_WHILE  (loc);       }

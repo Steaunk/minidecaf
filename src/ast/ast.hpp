@@ -688,7 +688,6 @@ class OrExpr : public Expr {
     Expr *e1;
     Expr *e2;
 };
-
 class IfExpr : public Expr {
   public:
     IfExpr(Expr *cond, Expr *e1, Expr *e2, Location *l);

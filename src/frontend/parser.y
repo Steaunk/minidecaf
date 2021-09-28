@@ -95,9 +95,11 @@ void scan_end();
 %nterm<mind::ast::FuncDefn* > FuncDefn
 %nterm<mind::ast::Type*> Type
 %nterm<mind::ast::Statement*> Stmt  ReturnStmt ExprStmt IfStmt  CompStmt WhileStmt DeclStmt
-%nterm<mind::ast::Expr*> Expr
+%nterm<mind::ast::Expr*> Expr LvalueExpr
+%nterm<mind::ast::VarRef*> VarRef
 /*   SUBSECTION 2.2: associativeness & precedences */
 %nonassoc QUESTION
+%left     ASSIGN
 %left     OR
 %left     AND
 %left EQU NEQ
@@ -140,6 +142,7 @@ FormalList :  /* EMPTY */
 
 Type        : INT
                 { $$ = new ast::IntType(POS(@1)); }
+
 StmtList    : /* empty */
                 { $$ = new ast::StmtList(); }
             | StmtList Stmt
@@ -170,8 +173,10 @@ IfStmt      : IF LPAREN Expr RPAREN Stmt
                 { $$ = new ast::IfStmt($3, $5, $7, POS(@1)); }
             ;
 
-DeclStmt    : Type IDENTIFIER SEMICOLON { $$=NULL;}
-            | Type IDENTIFIER ASSIGN ExprStmt {$$=NULL;}
+DeclStmt    : Type IDENTIFIER SEMICOLON 
+                { $$ = new ast::VarDecl($2, $1, POS(@1)); }
+            | Type IDENTIFIER ASSIGN Expr SEMICOLON 
+                { $$ = new ast::VarDecl($2, $1, $4, POS(@1)); }
             ;
 
 ReturnStmt  : RETURN Expr SEMICOLON
@@ -179,9 +184,22 @@ ReturnStmt  : RETURN Expr SEMICOLON
             ;
 ExprStmt    : Expr SEMICOLON
                 { $$ = new ast::ExprStmt($1, POS(@1)); } 
-            ;         
+            ;  
+
+VarRef      : IDENTIFIER
+                { $$ = new ast::VarRef($1, POS(@1)); }
+            ;
+
+LvalueExpr  : VarRef
+                { $$ = new ast::LvalueExpr($1, POS(@1)); }
+            | VarRef ASSIGN Expr
+                { $$ = new ast::AssignExpr($1, $3, POS(@2)); }
+            ;
+
 Expr        : ICONST
-                { $$ = new ast::IntConst($1, POS(@1)); }            
+                { $$ = new ast::IntConst($1, POS(@1)); } 
+            | LvalueExpr 
+                { $$ = $1; } 
             | LPAREN Expr RPAREN
                 { $$ = $2; }
             | Expr NEQ Expr
@@ -227,19 +245,18 @@ Expr        : ICONST
 #include <cstdio>
 
 static ast::Program* ptree = NULL;
+//static ast::Scope* scope = new Scope;
 extern int myline, mycol;   // defined in scanner.l
 
 // bison will generate code to invoke me
-void
-yyerror (char const *msg) {
+void yyerror (char const *msg) {
   err::issue(new Location(myline, mycol), new err::SyntaxError(msg));
   scan_end();
   std::exit(1);
 }
 
 // call me when the Program symbol is reduced
-void
-setParseTree(ast::Program* tree) {
+void setParseTree(ast::Program* tree) {
   ptree = tree;
 }
 
@@ -252,8 +269,7 @@ setParseTree(ast::Program* tree) {
  * NOTE:
  *   should any syntax error occur, this function would not return.
  */
-ast::Program*
-mind::MindCompiler::parseFile(const char* filename) {  
+ast::Program* mind::MindCompiler::parseFile(const char* filename) {  
   scan_begin(filename);
   /* if (NULL == filename)
 	yyin = stdin;
@@ -268,8 +284,7 @@ mind::MindCompiler::parseFile(const char* filename) {
   return ptree;
 }
 
-void
-yy::parser::error (const location_type& l, const std::string& m)
+void yy::parser::error (const location_type& l, const std::string& m)
 {
   //std::cerr << l << ": " << m << '\n';
   err::issue(new Location(l.begin.line, l.begin.column), new err::SyntaxError(m));

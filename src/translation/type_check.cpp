@@ -46,6 +46,7 @@ class SemPass2 : public ast::Visitor {
     virtual void visit(ast::NegExpr *);
     virtual void visit(ast::BitNotExpr *);
     virtual void visit(ast::NotExpr *);
+    virtual void visit(ast::IfExpr *);
     virtual void visit(ast::LvalueExpr *);
     virtual void visit(ast::VarRef *);
     // Visiting statements
@@ -236,6 +237,25 @@ void SemPass2::visit(ast::ModExpr *e) {
 
     e->ATTR(type) = BaseType::Int;
 }
+
+/* Visits an ast::IfExpr node.
+ *
+ * PARAMETERS:
+ *   e     - the ast::IfExpr node
+ */
+void SemPass2::visit(ast::IfExpr *e) {
+    e->condition->accept(this);
+    expect(e->condition, BaseType::Int);
+
+    e->true_brch->accept(this);
+    expect(e->true_brch, BaseType::Int);
+
+    e->false_brch->accept(this);
+    expect(e->false_brch, BaseType::Int);
+
+    e->ATTR(type) = BaseType::Int;
+}
+
 
 
 /* Visits an ast::NegExpr node.

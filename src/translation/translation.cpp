@@ -255,6 +255,32 @@ void Translation::visit(ast::ModExpr *e){
     e->ATTR(val) = tr->genMod(e->e1->ATTR(val), e->e2->ATTR(val));
 }
 
+/* Translating an ast::IfExpr node.
+ */
+void Translation::visit(ast::IfExpr *e){
+    Label L1 = tr->getNewLabel(); // entry of the false branch
+    Label L2 = tr->getNewLabel(); // exit
+    e->condition->accept(this);
+    Temp temp = tr->getNewTempI4();
+    tr->genJumpOnZero(L1, e->condition->ATTR(val));
+
+    e->true_brch->accept(this);
+    tr->genAssign(temp, e->true_brch->ATTR(val));
+    //e->ATTR(val) = e->true_brch->ATTR(val);
+    tr->genJump(L2); // done
+
+    tr->genMarkLabel(L1);
+    e->false_brch->accept(this);
+    tr->genAssign(temp, e->false_brch->ATTR(val));
+    //e->ATTR(val) = e->false_brch->ATTR(val);
+
+    tr->genMarkLabel(L2);
+    
+    e->ATTR(val) = temp;
+    //if(e->condition->ATTR(val))
+    //tr->genLoadImm4(e->va);
+}
+
 /* Translating an ast::IntConst node.
  */
 void Translation::visit(ast::IntConst *e) {

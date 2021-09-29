@@ -283,7 +283,12 @@ void RiscvDesc::emitTac(Tac *t) {
         emitBinaryTac(RiscvInstr::REM, t);
         break;
 
+    case Tac::ASSIGN:
+        emitBinaryTac(RiscvInstr::MOVE, t);
+        break;
+
     default:
+        printf("%d ????\n", t->op_code);
         mind_assert(false); // should not appear inside a basic block
     }
 }

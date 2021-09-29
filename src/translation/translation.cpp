@@ -95,7 +95,11 @@ void Translation::visit(ast::FuncDefn *f) {
  *   different kinds of Lvalue require different translation
  */
 void Translation::visit(ast::AssignExpr *s) {
-    // TODO
+    s->left->accept(this);
+    s->e->accept(this);
+    Temp temp = ((ast::VarRef *)(s->left))->ATTR(sym)->getTemp();
+    tr->genAssign(temp, s->e->ATTR(val));
+    s->ATTR(val) = s->e->ATTR(val);
 }
 
 /* Translating an ast::ExprStmt node.
@@ -287,8 +291,18 @@ void Translation::visit(ast::NotExpr *e) {
  *   different Lvalue kinds need different translation
  */
 void Translation::visit(ast::LvalueExpr *e) {
-    //e->e->
-    // TODO
+    e->lvalue->accept(this);
+
+    switch (e->lvalue->getKind()) {
+        case ast::ASTNode::VAR_REF:{
+            ast::VarRef *ref = (ast::VarRef *)e->lvalue;
+            e->ATTR(val) = ref->ATTR(sym)->getTemp();
+            break;
+        }
+        default:
+            mind_assert(false);
+    }
+    //((ast::VarRef *)(e->lvalue))->ATTR(sym)
 }
 
 /* Translating an ast::VarRef node.
@@ -301,6 +315,7 @@ void Translation::visit(ast::VarRef *ref) {
     switch (ref->ATTR(lv_kind)) {
     case ast::Lvalue::SIMPLE_VAR:
         // nothing to do
+    //ref->ATTR(val) = ref->ATTR(sym)->getTemp();
         break;
 
     default:
@@ -314,6 +329,11 @@ void Translation::visit(ast::VarRef *ref) {
 void Translation::visit(ast::VarDecl *decl) {
     // TODO
     decl->ATTR(sym)->attachTemp(tr->getNewTempI4());
+
+    if(decl->init != NULL){
+        decl->init->accept(this);
+        tr->genAssign(decl->ATTR(sym)->getTemp(), decl->init->ATTR(val));
+    }
 }
 
 /* Translates an entire AST into a Piece list.

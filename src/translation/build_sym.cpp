@@ -165,8 +165,7 @@ void SemPass1::visit(ast::VarDecl *vdecl) {
     t = vdecl->type->ATTR(type);
 
     vdecl->ATTR(sym) = new Variable(vdecl->name, t, vdecl->getLocation());
-        
-    Symbol *s = scopes->lookup(vdecl->name, vdecl->getLocation());
+    Symbol *s = scopes->lookup(vdecl->name, vdecl->getLocation(), 0);
     if(s != NULL){
         issue(vdecl->getLocation(),
             new DeclConflictError(vdecl->name, s)

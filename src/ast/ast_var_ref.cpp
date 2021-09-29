@@ -46,9 +46,10 @@ void VarRef::dumpTo(std::ostream &os) {
     ASTNode::dumpTo(os);
     os << " " << '"' << var << '"';
     newLine(os);
-    // if (NULL != owner)
-    // os << owner << ")";
-    // else
-    // os << "())";
+    //if (NULL != owner)
+    //    os << owner << ")";
+    //else
+    //    os << "())";
+    os << ")";
     decIndent(os);
 }

@@ -62,7 +62,6 @@ void MindCompiler::compile(const char *input, std::ostream &result) {
         result.flush();
         return;
     }
-
     // semantical analysis
     buildSymbols(tree);
     // TO STUDENTS: if you want to have a look at the symbol tables,

@@ -132,7 +132,9 @@ void Translation::visit(ast::WhileStmt *s) {
     Label L2 = tr->getNewLabel();
 
     Label old_break = current_break_label;
+    Label old_continue = current_continue_label;
     current_break_label = L2;
+    current_continue_label = L1;
 
     tr->genMarkLabel(L1);
     s->condition->accept(this);
@@ -144,11 +146,58 @@ void Translation::visit(ast::WhileStmt *s) {
     tr->genMarkLabel(L2);
 
     current_break_label = old_break;
+    current_continue_label = old_continue;
+}
+
+/* Translating an ast::ForStmt node.
+ */
+void Translation::visit(ast::ForStmt *s) {
+    if(s->init != NULL){
+        s->init->accept(this);
+    }
+    Label L1 = tr->getNewLabel();
+    Label L2 = tr->getNewLabel();
+    Label L3 = tr->getNewLabel();
+
+    Label old_break = current_break_label;
+    Label old_continue = current_continue_label;
+    current_break_label = L2;
+    current_continue_label = L3;
+
+    
+    if(s->first_condition != NULL){
+        s->first_condition->accept(this);
+        tr->genJumpOnZero(L2, s->first_condition->ATTR(val));
+    }
+    
+    tr->genMarkLabel(L1);
+
+    s->loop_body->accept(this);
+
+    tr->genMarkLabel(L3);
+    if(s->update != NULL)
+        s->update->accept(this);
+
+    if(s->condition != NULL){
+        s->condition->accept(this);
+        tr->genJumpOnZero(L2, s->condition->ATTR(val));
+    }
+ 
+    tr->genJump(L1);
+
+    tr->genMarkLabel(L2);
+
+    current_break_label = old_break;
+    current_continue_label = old_continue;
 }
 
 /* Translating an ast::BreakStmt node.
  */
 void Translation::visit(ast::BreakStmt *s) { tr->genJump(current_break_label); }
+
+/* Translating an ast::ContinueStmt node.
+ */
+void Translation::visit(ast::ContinueStmt *s) { tr->genJump(current_continue_label); }
 
 /* Translating an ast::CompStmt node.
  */
@@ -266,19 +315,15 @@ void Translation::visit(ast::IfExpr *e){
 
     e->true_brch->accept(this);
     tr->genAssign(temp, e->true_brch->ATTR(val));
-    //e->ATTR(val) = e->true_brch->ATTR(val);
     tr->genJump(L2); // done
 
     tr->genMarkLabel(L1);
     e->false_brch->accept(this);
     tr->genAssign(temp, e->false_brch->ATTR(val));
-    //e->ATTR(val) = e->false_brch->ATTR(val);
 
     tr->genMarkLabel(L2);
     
     e->ATTR(val) = temp;
-    //if(e->condition->ATTR(val))
-    //tr->genLoadImm4(e->va);
 }
 
 /* Translating an ast::IntConst node.

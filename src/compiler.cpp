@@ -54,9 +54,9 @@ MindCompiler::MindCompiler() {
 void MindCompiler::compile(const char *input, std::ostream &result) {
     // syntatical analysis
     ast::Program *tree = parseFile(input);
+    
     // Checkpoint 1: if we get a bad AST, terminate the compilation.
     err::checkPoint();
-
     if (Option::getLevel() == Option::PARSER) {
         result << tree << std::endl;
         result.flush();

@@ -66,11 +66,14 @@ class AndExpr;
 class AssignExpr;
 class BoolConst;
 class BoolType;
+class CompStmt;
 class DivExpr;
 class EquExpr;
 class Expr;
 class ExprStmt;
+class ForStmt;
 class FuncDefn;
+class FuncOrGlobal;
 class IfStmt;
 class IntConst;
 class IntType;
@@ -91,8 +94,6 @@ class Type;
 class VarDecl;
 class VarRef;
 class WhileStmt;
-class CompStmt;
-class FuncOrGlobal;
 
 // the lists are not ASTNode
 typedef util::List<FuncDefn *> FuncList;        // list of Function

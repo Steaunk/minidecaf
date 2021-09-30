@@ -37,6 +37,7 @@ class ASTNode {
         BIT_NOT_EXPR,
         BOOL_TYPE,
         BREAK_STMT,
+        CONTINUE_STMT,
         CALL_EXPR,
         COMP_STMT,
         DIV_EXPR,
@@ -65,6 +66,7 @@ class ASTNode {
         VAR_DECL,
         VAR_REF,
         WHILE_STMT,
+        FOR_STMT,
         FOD,
     } NodeType;
 
@@ -291,7 +293,8 @@ class ReturnStmt : public Statement {
 /* Node representing a while statement.
  *
  * SERIALIZED FORM:
- *   (while CONDITION LOOP_BODY)
+ *   (while CONDITION LOOP_BODY) 
+ *   //(for INIT COND UPDATE LOOP_BODY)
  */
 class WhileStmt : public Statement {
   public:
@@ -304,6 +307,31 @@ class WhileStmt : public Statement {
     Expr *condition;
     Statement *loop_body;
 };
+
+/* Node representing a for statement.
+ *
+ * SERIALIZED FORM:
+ *   (while CONDITION LOOP_BODY) 
+ *   //(for INIT COND UPDATE LOOP_BODY)
+ */
+class ForStmt : public Statement {
+  public:
+    ForStmt(Statement *init, Expr *cond, Expr *update, Statement *loop_body, Location *l);
+    ForStmt(Expr *init, Expr *cond, Expr *update, Statement *loop_body, Location *l);
+    ForStmt(Expr *first_condition, Statement *loop_body, Location *l);
+
+    virtual void accept(Visitor *);
+    virtual void dumpTo(std::ostream &);
+
+  public:
+    Expr *condition, *update, *first_condition;
+    Statement *loop_body;
+    ASTNode *init;
+    scope::Scope *ATTR(scope);
+};
+
+
+
 /* Node representing an comp statement.
  *
  * SERIALIZED FORM:
@@ -359,6 +387,14 @@ class ExprStmt : public Statement {
 class BreakStmt : public Statement {
   public:
     BreakStmt(Location *l);
+
+    virtual void accept(Visitor *);
+    virtual void dumpTo(std::ostream &);
+};
+
+class ContinueStmt : public Statement {
+  public:
+    ContinueStmt(Location *l);
 
     virtual void accept(Visitor *);
     virtual void dumpTo(std::ostream &);

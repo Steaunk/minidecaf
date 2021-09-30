@@ -59,6 +59,7 @@ void scan_end();
    WHILE "while"
    FOR "for"
    BREAK "break"
+   CONTINUE "continue"
    EQU "=="
    NEQ "!="
    AND "&&" 
@@ -94,8 +95,8 @@ void scan_end();
 %nterm<mind::ast::Program* > Program FoDList
 %nterm<mind::ast::FuncDefn* > FuncDefn
 %nterm<mind::ast::Type*> Type
-%nterm<mind::ast::Statement*> Stmt  ReturnStmt ExprStmt IfStmt  CompStmt WhileStmt DeclStmt
-%nterm<mind::ast::Expr*> Expr LvalueExpr
+%nterm<mind::ast::Statement*> Stmt  ReturnStmt ExprStmt IfStmt  CompStmt WhileStmt DeclStmt ForStmt
+%nterm<mind::ast::Expr*> Expr LvalueExpr ForExpr
 %nterm<mind::ast::VarRef*> VarRef
 /*   SUBSECTION 2.2: associativeness & precedences */
 %left     ASSIGN
@@ -159,18 +160,36 @@ Stmt        : ReturnStmt {$$ = $1;}|
               IfStmt     {$$ = $1;}|
               WhileStmt  {$$ = $1;}|
               CompStmt   {$$ = $1;}|
+              ForStmt    {$$ = $1;}|
               //DeclStmt   {$$ = $1;}|
               BREAK SEMICOLON  
                 {$$ = new ast::BreakStmt(POS(@1));} |
+              CONTINUE SEMICOLON
+                {$$ = new ast::ContinueStmt(POS(@1));} |
               SEMICOLON
                 {$$ = new ast::EmptyStmt(POS(@1));}
             ;
+            
 CompStmt    : LBRACE StmtList RBRACE
                 {$$ = new ast::CompStmt($2,POS(@1));}
             ;
 WhileStmt   : WHILE LPAREN Expr RPAREN Stmt
                 { $$ = new ast::WhileStmt($3, $5, POS(@1)); }
             ;
+ForStmt     : FOR LPAREN ForExpr SEMICOLON ForExpr SEMICOLON ForExpr RPAREN Stmt
+                { $$ = new ast::ForStmt($3, $5, $7, $9, POS(@1)); }
+            | FOR LPAREN DeclStmt ForExpr SEMICOLON ForExpr RPAREN Stmt
+                { $$ = new ast::ForStmt($3, $4, $6, $8, POS(@1)); }
+            | DO Stmt WHILE LPAREN Expr RPAREN SEMICOLON
+                { $$ = new ast::ForStmt($5, $2, POS(@1)); }
+            ;
+
+ForExpr     : /* empty */
+                { $$ = NULL; }
+            | Expr
+                { $$ = $1; }    
+
+
 IfStmt      : IF LPAREN Expr RPAREN Stmt
                 { $$ = new ast::IfStmt($3, $5, new ast::EmptyStmt(POS(@5)), POS(@1)); }
             | IF LPAREN Expr RPAREN Stmt ELSE Stmt

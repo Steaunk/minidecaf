@@ -89,6 +89,26 @@ void Translation::visit(ast::FuncDefn *f) {
     tr->endFunc();
 }
 
+/* Translating an ast::CallExpr node.
+ */
+void Translation::visit(ast::CallExpr *e){
+
+    for(auto expr : *(e->expr_list)){
+        expr->accept(this); 
+        //tr->genAssign(tr->getNewTempI4(), expr->ATTR(val));
+        //e->ATTR(val) = expr->ATTR(val);
+        
+    }
+    for(auto expr : *(e->expr_list)){
+        tr->genPush(expr->ATTR(val)); 
+    }
+    e->ATTR(val) = tr->genCall(e->ATTR(sym)->getEntryLabel());
+    assert(e->ATTR(val) != NULL);
+    for(auto expr : *(e->expr_list)){
+        tr->genPop();
+    }
+}
+
 /* Translating an ast::AssignStmt node.
  *
  * NOTE:
@@ -99,7 +119,7 @@ void Translation::visit(ast::AssignExpr *s) {
     s->e->accept(this);
     Temp temp = ((ast::VarRef *)(s->left))->ATTR(sym)->getTemp();
     tr->genAssign(temp, s->e->ATTR(val));
-    s->ATTR(val) = s->e->ATTR(val);
+    s->ATTR(val) = temp;//s->e->ATTR(val);
 }
 
 /* Translating an ast::ExprStmt node.
@@ -148,7 +168,6 @@ void Translation::visit(ast::WhileStmt *s) {
     current_break_label = old_break;
     current_continue_label = old_continue;
 }
-
 /* Translating an ast::ForStmt node.
  */
 void Translation::visit(ast::ForStmt *s) {
@@ -190,15 +209,12 @@ void Translation::visit(ast::ForStmt *s) {
     current_break_label = old_break;
     current_continue_label = old_continue;
 }
-
 /* Translating an ast::BreakStmt node.
  */
 void Translation::visit(ast::BreakStmt *s) { tr->genJump(current_break_label); }
-
 /* Translating an ast::ContinueStmt node.
  */
 void Translation::visit(ast::ContinueStmt *s) { tr->genJump(current_continue_label); }
-
 /* Translating an ast::CompStmt node.
  */
 void Translation::visit(ast::CompStmt *c) {
@@ -212,7 +228,6 @@ void Translation::visit(ast::ReturnStmt *s) {
     s->e->accept(this);
     tr->genReturn(s->e->ATTR(val));
 }
-
 /* Translating an ast::EquExpr node.
  */
 void Translation::visit(ast::EquExpr *e) {
@@ -325,7 +340,6 @@ void Translation::visit(ast::IfExpr *e){
     
     e->ATTR(val) = temp;
 }
-
 /* Translating an ast::IntConst node.
  */
 void Translation::visit(ast::IntConst *e) {
@@ -398,7 +412,6 @@ void Translation::visit(ast::VarRef *ref) {
 /* Translating an ast::VarDecl node.
  */
 void Translation::visit(ast::VarDecl *decl) {
-    // TODO
     decl->ATTR(sym)->attachTemp(tr->getNewTempI4());
 
     if(decl->init != NULL){

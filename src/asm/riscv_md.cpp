@@ -163,7 +163,7 @@ RiscvInstr *RiscvDesc::prepareSingleChain(BasicBlock *b, FlowGraph *g) {
     _tail = &leading;
     for (Tac *t = b->tac_chain; t != NULL; t = t->next)
         emitTac(t);
-
+    
     switch (b->end_kind) {
     case BasicBlock::BY_JUMP:
         spillDirtyRegs(b->LiveOut);
@@ -214,7 +214,6 @@ void RiscvDesc::emitTac(Tac *t) {
     std::ostringstream oss;
     t->dump(oss);
     addInstr(RiscvInstr::COMMENT, NULL, NULL, NULL, 0, EMPTY_STR, oss.str().c_str() + 4);
-
     switch (t->op_code) {
     case Tac::LOAD_IMM4:
         emitLoadImm4Tac(t);
@@ -287,11 +286,43 @@ void RiscvDesc::emitTac(Tac *t) {
         emitBinaryTac(RiscvInstr::MOVE, t);
         break;
 
+    case Tac::PUSH:
+        emitPushTac(t);
+        break;
+        //mind_assert(false);
+
+    /*case Tac::CALL:
+        addInstr(RiscvInstr::CALL, NULL, NULL, NULL, 0, t->name, NULL);*/
+
+    case Tac::POP:
+        addInstr(RiscvInstr::ADDI, _reg[RiscvReg::SP], _reg[RiscvReg::SP], NULL, 4, EMPTY_STR, NULL);
+        break;
+
+    case Tac::CALL: {
+        addInstr(RiscvInstr::CALL, NULL, NULL, NULL, 0, std::string("_") + t->op1.label->str_form, NULL);
+        int r0 = getRegForWrite(t->op0.var, 0, 0, t->LiveOut);
+        addInstr(RiscvInstr::MOVE, _reg[r0], _reg[RiscvReg::A0], NULL, 0, EMPTY_STR, NULL);
+        
+        break;
+    }
+
     default:
         printf("%d ????\n", t->op_code);
         mind_assert(false); // should not appear inside a basic block
     }
 }
+
+void RiscvDesc::emitPushTac(Tac *t) {
+    int r1 = getRegForRead(t->op0.var, 0, t->LiveOut);
+    addInstr(RiscvInstr::SW,  _reg[r1], _reg[RiscvReg::SP], NULL, 0, EMPTY_STR, NULL);
+    addInstr(RiscvInstr::ADDI, _reg[RiscvReg::SP], _reg[RiscvReg::SP], NULL, -4, EMPTY_STR, NULL);
+}
+
+/*void RiscvDesc::emitPopTac(Tac *t) {
+    addInstr(RiscvInstr::ADDI, _reg[RiscvReg::SP], _reg[RiscvReg::SP], NULL, 4, EMPTY_STR, NULL);
+}*/
+
+
 
 /* Translates a LoadImm4 TAC into Riscv instructions.
  *
@@ -413,7 +444,6 @@ void RiscvDesc::emitFuncty(Functy f) {
         // std::exit(0);
         return;
     }
-
     mind_assert(!f->entry->str_form.empty()); // this assertion should hold for every Functy
     // outputs the header of a function
     emitProlog(f->entry, _frame->getStackFrameSize());
@@ -466,7 +496,6 @@ void RiscvDesc::emitInstr(RiscvInstr *i) {
         return;
     std::ostringstream oss;
     oss << std::left << std::setw(6);
-
     switch (i->op_code) {
     case RiscvInstr::COMMENT:
         emit(EMPTY_STR, NULL, i->comment);
@@ -535,6 +564,10 @@ void RiscvDesc::emitInstr(RiscvInstr *i) {
     case RiscvInstr::ADD:
         oss << "add" << i->r0->name << ", " << i->r1->name << ", " << i->r2->name;
         break;
+
+    case RiscvInstr::ADDI:
+        oss << "addi" << i->r0->name << ", " << i->r1->name << ", "<< i->i;
+        break;
     
     case RiscvInstr::SUB:
         oss << "sub" << i->r0->name << ", " << i->r1->name << ", " << i->r2->name;
@@ -560,6 +593,10 @@ void RiscvDesc::emitInstr(RiscvInstr *i) {
         oss << "j" << i->l;
         break;
 
+    case RiscvInstr::CALL:
+        oss << "call" << i->l;
+        break;
+
     default:
         mind_assert(false); // other instructions not supported
     }
@@ -581,7 +618,6 @@ void RiscvDesc::emitTrace(BasicBlock *b, FlowGraph *g) {
         return;
     b->mark = 1;
     emit(std::string(b->entry_label), NULL, NULL);
-
     RiscvInstr *i = (RiscvInstr *)b->instr_chain;
     while (NULL != i) {
         emitInstr(i);
@@ -666,7 +702,6 @@ int RiscvDesc::getRegForRead(Temp v, int avoid1, LiveSet *live) {
     if (i < 0) {
         // we will load the content into some register
         i = lookupReg(NULL);
-
         if (i < 0) {
             i = selectRegToSpill(avoid1, RiscvReg::ZERO, live);
             spillReg(i, live);

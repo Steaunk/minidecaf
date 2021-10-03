@@ -61,6 +61,7 @@ class TransHelper {
     // Memory Access
     Temp genPop(void);
     void genPush(Temp);
+    Temp genCall(Label);
     // Control-flow related
     void genJump(Label);
     void genJumpOnZero(Label, Temp);

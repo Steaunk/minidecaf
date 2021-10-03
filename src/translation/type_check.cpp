@@ -32,6 +32,7 @@ class SemPass2 : public ast::Visitor {
     // Visiting expressions
     virtual void visit(ast::AssignExpr *);
     virtual void visit(ast::EquExpr *);
+    virtual void visit(ast::CallExpr *);
     virtual void visit(ast::NeqExpr *);
     virtual void visit(ast::AndExpr *);
     virtual void visit(ast::OrExpr *);
@@ -97,6 +98,40 @@ static void expect(ast::Expr *e, Type *t) {
  *   e     - the ast::IntConst node
  */
 void SemPass2::visit(ast::IntConst *e) { e->ATTR(type) = BaseType::Int; }
+
+/* Visits an ast::CallExpr node.
+ *
+ *   e     - the ast::CallExpr node
+ */
+void SemPass2::visit(ast::CallExpr *e) {
+    
+    e->ATTR(type) = BaseType::Error;
+    e->ATTR(sym) = NULL;
+
+    Function *v = (Function *)scopes->lookup(e->func, e->getLocation());
+
+    if (NULL == v) {
+        issue(e->getLocation(), new SymbolNotFoundError(e->func));
+
+    } else if (!v->isFunction()) {
+        issue(e->getLocation(), new NotMethodError(v));
+
+    } else {
+        e->ATTR(type) = v->getResultType();
+        e->ATTR(sym) = (Function *)v;
+    }
+
+    if(e->expr_list->length() != v->getType()->numOfParameters()){
+        issue(e->getLocation(), new SymbolNotFoundError(e->func));
+    }
+
+    util::List<Type *>::iterator iter = v->getType()->getArgList()->begin();
+    for(auto expr : *(e->expr_list)){
+        expr->accept(this);
+        expect(expr, *iter);
+        ++iter;
+    }
+}
 
 /* Visits an ast::RationalExpr node.
  *
@@ -313,6 +348,7 @@ void SemPass2::visit(ast::LvalueExpr *e) {
 void SemPass2::visit(ast::VarRef *ref) {
     // CASE I: owner is NULL ==> referencing a local var or a member var?
     Symbol *v = scopes->lookup(ref->var, ref->getLocation());
+    
     if (NULL == v) {
         issue(ref->getLocation(), new SymbolNotFoundError(ref->var));
         goto issue_error_type;
@@ -329,7 +365,6 @@ void SemPass2::visit(ast::VarRef *ref) {
             ref->ATTR(lv_kind) = ast::Lvalue::SIMPLE_VAR;
         }
     }
-
     return;
 
     // sometimes "GOTO" will make things simpler. this is one of such cases:
@@ -338,6 +373,8 @@ issue_error_type:
     ref->ATTR(sym) = NULL;
     return;
 }
+
+
 
 /* Visits an ast::VarDecl node.
  *
@@ -421,7 +458,7 @@ void SemPass2::visit(ast::ForStmt *s) {
     if(s->init != NULL) s->init->accept(this);
     if(s->first_condition != NULL){ 
         s->first_condition->accept(this);
-        if(!s->first_condition->ATTR(type)->equal(BaseType::Int)){puts("$");
+        if(!s->first_condition->ATTR(type)->equal(BaseType::Int)){
             issue(s->first_condition->getLocation(), new BadTestExprError());
             
         }

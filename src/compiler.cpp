@@ -85,7 +85,6 @@ void MindCompiler::compile(const char *input, std::ostream &result) {
     }
     // translating to linear IR
     tac::Piece *ir = translate(tree);
-
     if (Option::getLevel() == Option::TACGEN) {
         ir->dump(result);
         result << std::endl;

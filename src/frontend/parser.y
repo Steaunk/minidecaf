@@ -91,7 +91,8 @@ void scan_end();
 %token <std::string> IDENTIFIER "identifier"
 %token<int> ICONST "iconst"
 %nterm<mind::ast::StmtList*> StmtList
-%nterm<mind::ast::VarList* > FormalList 
+%nterm<mind::ast::VarList* > FormalList ParameterList
+%nterm<mind::ast::ExprList* > ExprList
 %nterm<mind::ast::Program* > Program FoDList
 %nterm<mind::ast::FuncDefn* > FuncDefn
 %nterm<mind::ast::Type*> Type
@@ -109,6 +110,10 @@ void scan_end();
 %left     TIMES SLASH MOD
 %nonassoc LNOT NEG BNOT
 %nonassoc LBRACK DOT
+
+//%nonassoc IF FOR WHILE
+//%nonassoc ELSE 
+
 
 %{
   /* we have to include scanner.hpp here... */
@@ -139,7 +144,17 @@ FuncDefn : Type IDENTIFIER LPAREN FormalList RPAREN LBRACE StmtList RBRACE {
               $$ = new ast::FuncDefn($2,$1,$4,new ast::EmptyStmt(POS(@6)),POS(@1));
           }
 FormalList :  /* EMPTY */
-            {$$ = new ast::VarList();} 
+            { $$ = new ast::VarList(); } 
+            | ParameterList
+            { $$ = $1; }
+        
+ParameterList : Type IDENTIFIER
+                { $$ = new ast::VarList();
+                  $$->append(new ast::VarDecl($2, $1, POS(@1))); }
+            |   Type IDENTIFIER COMMA ParameterList
+                { $4->append(new ast::VarDecl($2, $1, POS(@1))); 
+                  $$ = $4;
+                }
 
 Type        : INT
                 { $$ = new ast::IntType(POS(@1)); }
@@ -219,10 +234,24 @@ LvalueExpr  : VarRef
                 { $$ = new ast::AssignExpr($1, $3, POS(@2)); }
             ;
 
+ExprList    : Expr
+                { $$ = new ast::ExprList(); 
+                  $$->append($1);
+                }
+            | Expr COMMA ExprList
+                { $3->append($1);
+                  $$ = $3;
+                }
+            ;
+
 Expr        : ICONST
                 { $$ = new ast::IntConst($1, POS(@1)); } 
             | LvalueExpr 
                 { $$ = $1; } 
+            | IDENTIFIER LPAREN ExprList RPAREN
+                { $$ = new ast::CallExpr($3, $1, POS(@1)); }
+            | IDENTIFIER LPAREN RPAREN
+                { $$= new ast::CallExpr(new ast::ExprList(), $1, POS(@1)); }
             | LPAREN Expr RPAREN
                 { $$ = $2; }
             | Expr NEQ Expr

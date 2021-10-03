@@ -213,6 +213,20 @@ class FuncDefn : public ASTNode {
                        // definition?
     symb::Function *ATTR(sym); // for semantic analysis
 };
+
+class CallExpr : public Expr {
+  public:
+    CallExpr(ExprList *expr_list, std::string func, Location *l);
+
+    virtual void accept(Visitor *);
+    virtual void dumpTo(std::ostream &);
+
+    std::string func;
+    ExprList *expr_list;
+    symb::Function *ATTR(sym); // for tac generation
+
+};
+
 class FuncOrGlobal {
   public:
     FuncOrGlobal(FuncDefn *f, VarDecl *d) {

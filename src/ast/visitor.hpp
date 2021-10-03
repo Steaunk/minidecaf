@@ -30,6 +30,7 @@ namespace ast {
 class Visitor {
   public:
     // Expressions
+    virtual void visit(CallExpr *) {}
     virtual void visit(AddExpr *) {}
     virtual void visit(AndExpr *) {}
     virtual void visit(AssignExpr *) {}

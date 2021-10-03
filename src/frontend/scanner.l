@@ -74,6 +74,7 @@ IDENTIFIER    ([A-Za-z][_0-9A-Za-z]*)
 
 "int"         { return yy::parser::make_INT  (loc);      }
 "return"      { return yy::parser::make_RETURN  (loc);   }
+","          { return yy::parser::make_COMMA  (loc);   }
 ";"          { return yy::parser::make_SEMICOLON  (loc); }    
 "("          { return yy::parser::make_LPAREN  (loc);       }
 ")"          { return yy::parser::make_RPAREN  (loc);       }

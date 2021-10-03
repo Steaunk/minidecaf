@@ -28,6 +28,7 @@ class Translation : public ast::Visitor {
     virtual void visit(ast::ExprStmt *);
     virtual void visit(ast::IfStmt *);
     virtual void visit(ast::ReturnStmt *);
+    virtual void visit(ast::CallExpr *);
     virtual void visit(ast::EquExpr *);
     virtual void visit(ast::NeqExpr *);
     virtual void visit(ast::AndExpr *);

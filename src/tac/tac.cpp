@@ -566,6 +566,15 @@ Tac *Tac::Return(Temp value) {
     return t;
 }
 
+Tac *Tac::Call(Temp dest, Label label) {
+    REQUIRE_I4(dest);
+
+    Tac *t = allocateNewTac(Tac::CALL);
+    t->op0.var = dest;
+    t->op1.label = label;
+    return t;
+}
+
 /* Creates a Mark tac.
  *
  * NOTE:
@@ -745,6 +754,10 @@ void Tac::dump(std::ostream &os) {
 
     case LOAD_IMM4:
         os << "    " << op0.var << " <- " << op1.ival;
+        break;
+
+    case CALL:
+        os << "    " << op0.var << " = CALL " << op1.label;
         break;
 
     default:

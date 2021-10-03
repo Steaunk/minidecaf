@@ -429,6 +429,12 @@ Temp TransHelper::genPop(void) {
  */
 void TransHelper::genPush(Temp src) { chainUp(Tac::Push(src)); }
 
+Temp TransHelper::genCall(Label temp) {
+    Temp c = getNewTempI4();
+    chainUp(Tac::Call(c, temp));
+    return c;
+}
+
 /* Appends a Jump tac node to the current list.
  *
  * PARAMETERS:

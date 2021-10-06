@@ -283,16 +283,13 @@ void RiscvDesc::emitTac(Tac *t) {
         break;
 
     case Tac::ASSIGN:
-        emitBinaryTac(RiscvInstr::MOVE, t);
+        emitUnaryTac(RiscvInstr::MOVE, t);
         break;
 
     case Tac::PUSH:
         emitPushTac(t);
         break;
         //mind_assert(false);
-
-    /*case Tac::CALL:
-        addInstr(RiscvInstr::CALL, NULL, NULL, NULL, 0, t->name, NULL);*/
 
     case Tac::POP:
         addInstr(RiscvInstr::ADDI, _reg[RiscvReg::SP], _reg[RiscvReg::SP], NULL, 4, EMPTY_STR, NULL);

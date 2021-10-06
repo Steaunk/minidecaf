@@ -221,13 +221,13 @@ void BasicBlock::analyzeLiveness(void) {
 
         case Tac::POP:
         case Tac::LOAD_IMM4:
-        case Tac::CALL:
             if (NULL != t_next->op0.var)
                 t->LiveOut->remove(t_next->op0.var);
             break;
 
         case Tac::PUSH:
         case Tac::PARAM:
+        case Tac::CALL:
             t->LiveOut->add(t_next->op0.var);
             break;
 

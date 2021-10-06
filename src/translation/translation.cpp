@@ -119,7 +119,7 @@ void Translation::visit(ast::AssignExpr *s) {
     s->e->accept(this);
     Temp temp = ((ast::VarRef *)(s->left))->ATTR(sym)->getTemp();
     tr->genAssign(temp, s->e->ATTR(val));
-    s->ATTR(val) = temp;//s->e->ATTR(val);
+    s->ATTR(val) = s->e->ATTR(val);
 }
 
 /* Translating an ast::ExprStmt node.

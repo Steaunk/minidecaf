@@ -298,13 +298,18 @@ void RiscvDesc::emitTac(Tac *t) {
         addInstr(RiscvInstr::ADDI, _reg[RiscvReg::SP], _reg[RiscvReg::SP], NULL, 4, EMPTY_STR, NULL);
         break;
 
-    case Tac::CALL: {
-        addInstr(RiscvInstr::CALL, NULL, NULL, NULL, 0, std::string("_") + t->op1.label->str_form, NULL);
-        int r0 = getRegForWrite(t->op0.var, 0, 0, t->LiveOut);
-        addInstr(RiscvInstr::MOVE, _reg[r0], _reg[RiscvReg::A0], NULL, 0, EMPTY_STR, NULL);
-        
+    case Tac::CALL: 
+        emitCallTac(t);
+        /*{
+            addInstr(RiscvInstr::CALL, NULL, NULL, NULL, 0, std::string("_") + t->op1.label->str_form, NULL);
+            int r0 = getRegForWrite(t->op0.var, 0, 0, t->LiveOut);
+            addInstr(RiscvInstr::MOVE, _reg[r0], _reg[RiscvReg::A0], NULL, 0, EMPTY_STR, NULL);
+            }
+        */
         break;
-    }
+    
+    case Tac::PARAM:
+        break;
 
     default:
         printf("%d ????\n", t->op_code);
@@ -312,10 +317,57 @@ void RiscvDesc::emitTac(Tac *t) {
     }
 }
 
+
+void RiscvDesc::emitCallTac(Tac *t) {
+
+    Set<Temp>* liveness = t->LiveOut->clone();
+
+    {
+        int cnt = 0;
+        for(auto temp : *liveness){
+            cnt -= 4;
+            int r1 = getRegForRead(temp, 0, t->LiveOut);
+            addInstr(RiscvInstr::SW,  _reg[r1], _reg[RiscvReg::SP], NULL, cnt, EMPTY_STR, NULL);
+        }
+        addInstr(RiscvInstr::ADDI, _reg[RiscvReg::SP], _reg[RiscvReg::SP], NULL, cnt, EMPTY_STR, NULL);
+    }
+
+    int count = 0;
+    for(Tac *it = t->prev; it != NULL && it->op_code == Tac::PARAM; it = it->prev) count += 4;
+
+    if(count > 0){
+        addInstr(RiscvInstr::ADDI, _reg[RiscvReg::SP], _reg[RiscvReg::SP], NULL, -count, EMPTY_STR, NULL);
+        int cnt = count;
+        for(Tac *it = t->prev; it != NULL && it->op_code == Tac::PARAM; it = it->prev){
+            cnt -= 4;
+            int r1 = getRegForRead(it->op0.var, 0, it->LiveOut);
+            addInstr(RiscvInstr::SW,  _reg[r1], _reg[RiscvReg::SP], NULL, cnt, EMPTY_STR, NULL);
+        }
+    }
+    count += liveness->size() * 4;
+
+    addInstr(RiscvInstr::CALL, NULL, NULL, NULL, 0, std::string("_") + t->op1.label->str_form, NULL);
+    
+    //printf("%d\n", r0);
+    {
+        int cnt = 0;
+        addInstr(RiscvInstr::ADDI, _reg[RiscvReg::SP], _reg[RiscvReg::SP], NULL, count, EMPTY_STR, NULL);
+        for(auto temp: *liveness){
+            cnt -= 4;
+            int r1 = getRegForWrite(temp, 0, 0, t->LiveOut);
+            addInstr(RiscvInstr::LW,  _reg[r1], _reg[RiscvReg::SP], NULL, cnt, EMPTY_STR, NULL);
+        }
+    }
+    
+    int r0 = getRegForWrite(t->op0.var, 0, 0, t->LiveOut);
+    addInstr(RiscvInstr::MOVE, _reg[r0], _reg[RiscvReg::A0], NULL, 0, EMPTY_STR, NULL);
+}
+
+
 void RiscvDesc::emitPushTac(Tac *t) {
     int r1 = getRegForRead(t->op0.var, 0, t->LiveOut);
-    addInstr(RiscvInstr::SW,  _reg[r1], _reg[RiscvReg::SP], NULL, 0, EMPTY_STR, NULL);
     addInstr(RiscvInstr::ADDI, _reg[RiscvReg::SP], _reg[RiscvReg::SP], NULL, -4, EMPTY_STR, NULL);
+    addInstr(RiscvInstr::SW,  _reg[r1], _reg[RiscvReg::SP], NULL, 0, EMPTY_STR, NULL);
 }
 
 /*void RiscvDesc::emitPopTac(Tac *t) {

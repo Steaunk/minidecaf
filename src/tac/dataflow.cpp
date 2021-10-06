@@ -75,6 +75,7 @@ void BasicBlock::computeDefAndLiveUse(void) {
             break;
 
         case Tac::PUSH:
+        case Tac::PARAM:
             updateLU(t->op0.var);
             break;
 
@@ -226,6 +227,7 @@ void BasicBlock::analyzeLiveness(void) {
             break;
 
         case Tac::PUSH:
+        case Tac::PARAM:
             t->LiveOut->add(t_next->op0.var);
             break;
 

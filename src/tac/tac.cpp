@@ -548,6 +548,15 @@ Tac *Tac::Pop(Temp dest) { // dest may be NULL
     return t;
 }
 
+Tac *Tac::Param(Temp dest) {
+    REQUIRE_I4(dest);
+
+    Tac *t = allocateNewTac(Tac::PARAM);
+    t->op0.var = dest;
+    
+    return t;
+}
+
 /* Creates a Return tac.
  *
  * NOTE:
@@ -557,6 +566,7 @@ Tac *Tac::Pop(Temp dest) { // dest may be NULL
  * RETURNS:
  *   a Return tac
  */
+
 Tac *Tac::Return(Temp value) {
     REQUIRE_I4(value);
 
@@ -758,6 +768,10 @@ void Tac::dump(std::ostream &os) {
 
     case CALL:
         os << "    " << op0.var << " = CALL " << op1.label;
+        break;
+
+    case PARAM:
+        os << "    PARAM " << op0.var;
         break;
 
     default:

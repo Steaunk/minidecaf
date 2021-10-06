@@ -163,6 +163,7 @@ class RiscvDesc : public MachineDesc {
     void emitBinaryTac(RiscvInstr::OpCode, tac::Tac *);
     // translates a Push TAC into assembly instructions
     void emitPushTac(tac::Tac *);
+    void emitCallTac(tac::Tac *);
 
     // outputs an instruction
     void emit(std::string, const char *, const char *);

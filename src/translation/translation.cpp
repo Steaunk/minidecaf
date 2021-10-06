@@ -100,7 +100,7 @@ void Translation::visit(ast::CallExpr *e){
         
     }
     for(auto expr : *(e->expr_list)){
-        tr->genPush(expr->ATTR(val)); 
+        tr->genParam(expr->ATTR(val)); 
     }
     e->ATTR(val) = tr->genCall(e->ATTR(sym)->getEntryLabel());
     assert(e->ATTR(val) != NULL);

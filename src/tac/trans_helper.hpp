@@ -62,6 +62,7 @@ class TransHelper {
     Temp genPop(void);
     void genPush(Temp);
     Temp genCall(Label);
+    void genParam(Temp);
     // Control-flow related
     void genJump(Label);
     void genJumpOnZero(Label, Temp);

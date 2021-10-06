@@ -97,16 +97,16 @@ void Translation::visit(ast::CallExpr *e){
         expr->accept(this); 
         //tr->genAssign(tr->getNewTempI4(), expr->ATTR(val));
         //e->ATTR(val) = expr->ATTR(val);
-        
+        assert(expr->ATTR(val) != NULL);
     }
     for(auto expr : *(e->expr_list)){
         tr->genParam(expr->ATTR(val)); 
     }
     e->ATTR(val) = tr->genCall(e->ATTR(sym)->getEntryLabel());
     assert(e->ATTR(val) != NULL);
-    for(auto expr : *(e->expr_list)){
+    /*for(auto expr : *(e->expr_list)){
         tr->genPop();
-    }
+    }*/
 }
 
 /* Translating an ast::AssignStmt node.

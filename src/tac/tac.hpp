@@ -100,6 +100,7 @@ struct Tac {
         LOAD_IMM4,
         LOAD_SYMBOL,
         LOAD,
+        STORE,
         MEMO,
         CALL,
         PARAM,
@@ -149,6 +150,7 @@ struct Tac {
     static Tac *LoadImm4(Temp dest, int value);
     static Tac *LoadSymbol(Temp dest, std::string label);
     static Tac *Load(Temp dest, Temp src, int offset);
+    static Tac *Store(Temp src, Temp base, int offset);
     static Tac *Jump(Label dest);
     static Tac *JZero(Label dest, Temp cond);
     static Tac *Pop(Temp dest);

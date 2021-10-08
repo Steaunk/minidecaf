@@ -80,7 +80,12 @@ void BasicBlock::computeDefAndLiveUse(void) {
         case Tac::CALL:
             updateLU(t->op0.var);
             break;
-
+        
+        case Tac::STORE:
+            updateLU(t->op0.var);
+            updateLU(t->op1.var);
+            break;
+        
         default:
             mind_assert(false); // MARK, MEMO, JUMP, JZERO and RETURN will not
                                 // appear inside
@@ -233,6 +238,11 @@ void BasicBlock::analyzeLiveness(void) {
         case Tac::PARAM:
         case Tac::CALL:
             t->LiveOut->add(t_next->op0.var);
+            break;
+
+        case Tac::STORE:
+            t->LiveOut->add(t_next->op0.var);
+            t->LiveOut->add(t_next->op1.var);
             break;
 
         default:

@@ -322,6 +322,10 @@ void RiscvDesc::emitTac(Tac *t) {
         emitLoadTac(t);
         break;
 
+    case Tac::STORE:
+        emitStoreTac(t);
+        break;
+
     default:
         printf("%d ????\n", t->op_code);
         mind_assert(false); // should not appear inside a basic block
@@ -424,6 +428,13 @@ void RiscvDesc::emitLoadTac(Tac *t) {
              NULL);
 }
 
+void RiscvDesc::emitStoreTac(Tac *t) {
+
+    int r0 = getRegForRead(t->op0.var, 0, t->LiveOut);
+    int r1 = getRegForRead(t->op1.var, r0, t->LiveOut);
+    addInstr(RiscvInstr::SW, _reg[r0], _reg[r1], NULL, t->op1.offset, EMPTY_STR,
+             NULL);
+}
 /* Translates a Unary TAC into Riscv instructions.
  *
  * PARAMETERS:

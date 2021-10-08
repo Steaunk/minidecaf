@@ -57,6 +57,11 @@ typedef struct FunctyObject {
     Tac *code;           // tac chain of the function
 } * Functy;
 
+typedef struct GlobalObject {
+    std::string name;   
+    int value;
+} *GlobalVar;
+
 /** Three address code.
  *
  *  NOTE: We use "struct" instead of "class" here for your convenience.
@@ -93,9 +98,11 @@ struct Tac {
         POP,
         RETURN,
         LOAD_IMM4,
+        LOAD_SYMBOL,
+        LOAD,
         MEMO,
         CALL,
-        PARAM
+        PARAM,
     } Kind;
 
     // Operand type
@@ -140,6 +147,8 @@ struct Tac {
     static Tac *LNot(Temp dest, Temp src);
     static Tac *BNot(Temp dest, Temp src);
     static Tac *LoadImm4(Temp dest, int value);
+    static Tac *LoadSymbol(Temp dest, std::string label);
+    static Tac *Load(Temp dest, Temp src, int offset);
     static Tac *Jump(Label dest);
     static Tac *JZero(Label dest, Temp cond);
     static Tac *Pop(Temp dest);
@@ -168,11 +177,13 @@ struct Piece {
     // kind of this Piece node
     enum {
         FUNCTY,
+        GLOBAL
     } kind;
 
     // data of this Piece node
     union {
         Functy functy;
+        GlobalVar globalVar;
     } as;
 
     // next Piece node

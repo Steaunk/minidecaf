@@ -107,7 +107,8 @@ struct RiscvInstr : public Instr {
         SLTU,
         SGT,
         SGE,
-        CALL
+        CALL,
+        LA
         // You could add other instructions/pseudo instructions here
     } op_code; // operation code
 
@@ -157,12 +158,17 @@ class RiscvDesc : public MachineDesc {
     void emitTac(tac::Tac *);
     // translates a LoadImm4 TAC into assembly instructions
     void emitLoadImm4Tac(tac::Tac *);
+    // translates a LoadSymbol TAC into assembly instructions
+    void emitLoadSymbolTac(tac::Tac *);
+    // translates a Load TAC into assembly instructions
+    void emitLoadTac(tac::Tac *);
     // translates a Unary TAC into assembly instructions
     void emitUnaryTac(RiscvInstr::OpCode, tac::Tac *);
     // translates a Binary TAC into assembly instructions
     void emitBinaryTac(RiscvInstr::OpCode, tac::Tac *);
     // translates a Push TAC into assembly instructions
     void emitPushTac(tac::Tac *);
+    // translates a Call TAC into assembly instructions
     void emitCallTac(tac::Tac *);
 
     // outputs an instruction

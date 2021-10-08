@@ -118,11 +118,17 @@ void RiscvDesc::emitPieces(scope::GlobalScope *gscope, Piece *ps,
         emit(EMPTY_STR, ".align 2", NULL);
     }
     // translates node by node
-
     while (NULL != ps) {
         switch (ps->kind) {
         case Piece::FUNCTY:
             emitFuncty(ps->as.functy);
+            break;
+
+        case Piece::GLOBAL:
+            emit(EMPTY_STR, ".data", NULL);
+            emit(EMPTY_STR, ((std::string)(".global ") + ps->as.globalVar->name).c_str(), NULL);
+            emit(ps->as.globalVar->name.c_str(), NULL, NULL);
+            emit(EMPTY_STR, ((std::string)(".word ") + std::to_string(ps->as.globalVar->value)).c_str(), NULL);
             break;
 
         default:
@@ -307,6 +313,14 @@ void RiscvDesc::emitTac(Tac *t) {
     
     case Tac::PARAM:
         break;
+    
+    case Tac::LOAD_SYMBOL:
+        emitLoadSymbolTac(t);
+        break;
+    
+    case Tac::LOAD:
+        emitLoadTac(t);
+        break;
 
     default:
         printf("%d ????\n", t->op_code);
@@ -386,6 +400,27 @@ void RiscvDesc::emitLoadImm4Tac(Tac *t) {
     // uses "load immediate number" instruction
     int r0 = getRegForWrite(t->op0.var, 0, 0, t->LiveOut);
     addInstr(RiscvInstr::LI, _reg[r0], NULL, NULL, t->op1.ival, EMPTY_STR,
+             NULL);
+}
+
+void RiscvDesc::emitLoadSymbolTac(Tac *t) {
+    if (!t->LiveOut->contains(t->op0.var))
+        return;
+
+    // uses "load immediate number" instruction
+    int r0 = getRegForWrite(t->op0.var, 0, 0, t->LiveOut);
+    addInstr(RiscvInstr::LA, _reg[r0], NULL, NULL, 0, t->op1.name,
+             NULL);
+}
+
+void RiscvDesc::emitLoadTac(Tac *t) {
+    if (!t->LiveOut->contains(t->op0.var))
+        return;
+
+    // uses "load immediate number" instruction
+    int r1 = getRegForRead(t->op1.var, 0, t->LiveOut);
+    int r0 = getRegForWrite(t->op0.var, r1, 0, t->LiveOut);
+    addInstr(RiscvInstr::LW, _reg[r0], _reg[r1], NULL, t->op1.offset, EMPTY_STR,
              NULL);
 }
 
@@ -644,6 +679,10 @@ void RiscvDesc::emitInstr(RiscvInstr *i) {
 
     case RiscvInstr::CALL:
         oss << "call" << i->l;
+        break;
+
+    case RiscvInstr::LA:
+        oss << "la" << i->r0->name << ", " << i->l;
         break;
 
     default:

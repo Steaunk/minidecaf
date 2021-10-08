@@ -39,6 +39,8 @@ class TransHelper {
     // ends translating a function
     void endFunc(void);
 
+    void genGlobalVarible(std::string, int);
+
     // Arithmetic
     Temp genAdd(Temp, Temp);
     Temp genSub(Temp, Temp);
@@ -70,6 +72,8 @@ class TransHelper {
     // Miscellaneous
     void genAssign(Temp, Temp);
     Temp genLoadImm4(int);
+    Temp genLoadSymbol(std::string);
+    Temp genLoad(Temp, int);
     void genMarkLabel(Label);
     void genMemo(const char *);
 

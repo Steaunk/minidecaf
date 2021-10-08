@@ -364,6 +364,9 @@ void SemPass2::visit(ast::VarRef *ref) {
         if (((Variable *)v)->isLocalVar()) {
             ref->ATTR(lv_kind) = ast::Lvalue::SIMPLE_VAR;
         }
+        /*else if(((Variable *)v)->isGlobalVar()) {
+            ref->ATTR(lv_kind) = ast::Lvalue::
+        }*/
     }
     return;
 

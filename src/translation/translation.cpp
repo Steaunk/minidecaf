@@ -381,7 +381,11 @@ void Translation::visit(ast::LvalueExpr *e) {
     switch (e->lvalue->getKind()) {
         case ast::ASTNode::VAR_REF:{
             ast::VarRef *ref = (ast::VarRef *)e->lvalue;
-            e->ATTR(val) = ref->ATTR(sym)->getTemp();
+            if(ref->ATTR(sym)->isGlobalVar()){
+                Temp temp = tr->genLoadSymbol(ref->ATTR(sym)->getName());
+                e->ATTR(val) = tr->genLoad(temp, 0);
+            }
+            else e->ATTR(val) = ref->ATTR(sym)->getTemp();
             break;
         }
         default:
@@ -411,12 +415,22 @@ void Translation::visit(ast::VarRef *ref) {
 
 /* Translating an ast::VarDecl node.
  */
-void Translation::visit(ast::VarDecl *decl) {
-    decl->ATTR(sym)->attachTemp(tr->getNewTempI4());
+void Translation::visit(ast::VarDecl *decl){
+    if(decl->ATTR(sym)->isGlobalVar()){
+        if(decl->init == NULL)
+            tr->genGlobalVarible(decl->name, 0);
+        else {
+            assert(decl->init->getKind() == ast::ASTNode::INT_CONST);
+            tr->genGlobalVarible(decl->name, ((ast::IntConst *)(decl->init))->value);
+        }
+    }
+    else {
+        decl->ATTR(sym)->attachTemp(tr->getNewTempI4());
 
-    if(decl->init != NULL){
-        decl->init->accept(this);
-        tr->genAssign(decl->ATTR(sym)->getTemp(), decl->init->ATTR(val));
+        if(decl->init != NULL){
+            decl->init->accept(this);
+            tr->genAssign(decl->ATTR(sym)->getTemp(), decl->init->ATTR(val));
+        }
     }
 }
 

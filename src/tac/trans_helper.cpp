@@ -190,6 +190,14 @@ void TransHelper::endFunc(void) {
     current = NULL;
 }
 
+void TransHelper::genGlobalVarible(std::string name, int value) {
+    ptail = ptail->next = new Piece();
+    ptail->kind = Piece::GLOBAL;
+    ptail->as.globalVar = new GlobalObject();
+    ptail->as.globalVar->name = name;
+    ptail->as.globalVar->value = value;
+}
+
 /* Appends an Add tac node to the current list.
  *
  * PARAMETERS:
@@ -487,6 +495,18 @@ void TransHelper::genAssign(Temp dest, Temp src) {
 Temp TransHelper::genLoadImm4(int value) {
     Temp c = getNewTempI4();
     chainUp(Tac::LoadImm4(c, value));
+    return c;
+}
+
+Temp TransHelper::genLoadSymbol(std::string label){
+    Temp c = getNewTempI4();
+    chainUp(Tac::LoadSymbol(c, label));
+    return c;
+}
+
+Temp TransHelper::genLoad(Temp temp, int offset){
+    Temp c = getNewTempI4();
+    chainUp(Tac::Load(c, temp, offset));
     return c;
 }
 

@@ -221,6 +221,8 @@ DeclStmt    : Type IDENTIFIER SEMICOLON
                 { $$ = new ast::VarDecl($2, $1, POS(@1)); }
             | Type IDENTIFIER ASSIGN Expr SEMICOLON 
                 { $$ = new ast::VarDecl($2, $1, $4, POS(@1)); }
+            | Type IDENTIFIER LBRACK ICONST RBRACK SEMICOLON
+                { $$ = new ast::VarDecl($2, $1, $4, POS(@1)); }
             ;
 
 ReturnStmt  : RETURN Expr SEMICOLON

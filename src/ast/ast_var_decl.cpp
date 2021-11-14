@@ -38,13 +38,13 @@ VarDecl::VarDecl(std::string n, Type *t, Expr *i, Location *l) {
 }
 
 VarDecl::VarDecl(std::string n, Type *t, int d, Location *l) {
-
     setBasicInfo(VAR_DECL, l);
 
     name = n;
     type = t;
     init = NULL;
 }
+
 
 /* Visits the current node.
  *

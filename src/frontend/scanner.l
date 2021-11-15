@@ -1,29 +1,11 @@
-/*****************************************************
- *  The GNU Flex Specification for Mind Language.
- *
- *  We have provided complete SECTION I & IV for you.
- *  Please complete SECTION II & III.
- *
- *  In case you want some debug support, we provide a
- *  "diagnose()" function for you. All you need is to 
- *  call this function in main.cpp.
- *
- *  Please refer to the ``GNU Flex Manual'' if you have
- *  problems about how to write the lexical rules.
- *
- *  Keltin Leung 
-%option yylineno noyywrap nounistd nounput bison-locations never-interactive  noinput batch debug
- */
 %option yylineno noyywrap nounput noinput batch
 
 %option outfile="scanner.cpp"
-/* %option outfile="scanner.cpp" header-file="scanner.hpp" */
 
-/* SECTION I: preamble inclusion. */
 %{
 #include "config.hpp"
 #include "ast/ast.hpp"
-#include "parser.hpp"
+#include "frontend/myparser.hpp"
 using namespace mind;
 #include "location.hpp"
 
@@ -32,22 +14,15 @@ using namespace mind;
 #include <climits>
 
 using namespace mind::err;
-yy::location loc;
+#define YY_USER_ACTION   updateLocation(loc);
+Location loc(0);
+inline void updateLocation(Location& loc);
+Token make_ICONST (std::string s, Location* loc);
+//yylex   
 # define YY_DECL \
-  yy::parser::symbol_type yylex ()
+  Token yylex ()
 // ... and declare it for the parser's sake.
 YY_DECL;
-
-%}
-
-%{
-  // Code run each time a pattern is matched.
-  # define YY_USER_ACTION  loc.columns (yyleng);
-%}
-%{
-  // A number symbol corresponding to the value in S.
-  yy::parser::symbol_type
-  make_ICONST (const std::string &s, const yy::parser::location_type& loc);
 %}
 
 /* SECTION II: macro definition */
@@ -60,79 +35,75 @@ IDENTIFIER    ([A-Za-z][_0-9A-Za-z]*)
 %x B C
 %%
 {WHITESPACE}  {       }
-{NEWLINE}     { loc.lines (yyleng); loc.step (); }
+{NEWLINE}     { loc.col = 0; }
 "//"          { BEGIN(C);         }
-<C>{NEWLINE}  { BEGIN(0); loc.lines (yyleng); loc.step ();        }
-<C><EOF>      { return yy::parser::make_END (loc); }
+<C>{NEWLINE}  { BEGIN(0);        }
+<C><EOF>      { return Token(TokenType::END,new Location(loc)); }
 <C>.          { /* ignore */      }
 
 "/*"          { BEGIN(B); }
 <B>"*/"       { BEGIN(0); }
 <B>.|\n ;  
-<B><EOF> { return yy::parser::make_END (loc); }
-<<EOF>> { return yy::parser::make_END (loc); }
+<B><EOF> { return Token(TokenType::END,new Location(loc)); }
+<<EOF>> { return Token(TokenType::END,new Location(loc)); }
 
-"int"         { return yy::parser::make_INT  (loc);      }
-"return"      { return yy::parser::make_RETURN  (loc);   }
-","          { return yy::parser::make_COMMA  (loc);   }
-";"          { return yy::parser::make_SEMICOLON  (loc); }    
-"("          { return yy::parser::make_LPAREN  (loc);       }
-")"          { return yy::parser::make_RPAREN  (loc);       }
-"{"          { return yy::parser::make_LBRACE  (loc);       }
-"}"          { return yy::parser::make_RBRACE  (loc);       }
-"["          { return yy::parser::make_LBRACK  (loc);       }
-"]"          { return yy::parser::make_RBRACK  (loc);       }
-"!="         { return yy::parser::make_NEQ  (loc);       }
-"=="         { return yy::parser::make_EQU  (loc);       }
-"<="         { return yy::parser::make_LEQ  (loc);       }
-"<"          { return yy::parser::make_LT  (loc);       }
-">="         { return yy::parser::make_GEQ  (loc);       }
-">"          { return yy::parser::make_GT  (loc);       }
-"&&"         { return yy::parser::make_AND  (loc);       }
-"||"         { return yy::parser::make_OR  (loc);       }
-"+"          { return yy::parser::make_PLUS  (loc);       }
-"-"          { return yy::parser::make_MINUS  (loc);       }
-"*"          { return yy::parser::make_TIMES  (loc);       }
-"/"          { return yy::parser::make_SLASH  (loc);       }
-"%"          { return yy::parser::make_MOD  (loc);       }
-"~"          { return yy::parser::make_BNOT  (loc);       }
-"!"          { return yy::parser::make_LNOT  (loc);       }
-"="          { return yy::parser::make_ASSIGN (loc);  }
-"?"          { return yy::parser::make_QUESTION(loc); }
-":"          { return yy::parser::make_COLON(loc);  }
-"if"         { return yy::parser::make_IF  (loc);       }
-"else"       { return yy::parser::make_ELSE  (loc);       }
-"while"      { return yy::parser::make_WHILE  (loc);       }
-"for"        { return yy::parser::make_FOR(loc); }
-"continue"   { return yy::parser::make_CONTINUE(loc); }
-"break"      { return yy::parser::make_BREAK (loc);       }
-"do"         { return yy::parser::make_DO(loc); }
+"int"         { return Token(TokenType::INT,new Location(loc));      }
+"return"      { return Token(TokenType::RETURN,new Location(loc));   }
+";"          { return Token(TokenType::SEMICOLON,new Location(loc)); }    
+":"          { return Token(TokenType::COLON,new Location(loc)); }    
+"("          { return Token(TokenType::LPAREN,new Location(loc));       }
+")"          { return Token(TokenType::RPAREN,new Location(loc));      }
+"{"          { return Token(TokenType::LBRACE,new Location(loc));       }
+"}"          { return Token(TokenType::RBRACE,new Location(loc));     }
+"~"          { return Token(TokenType::BNOT,new Location(loc));       }
+"!"          { return Token(TokenType::LNOT,new Location(loc));       }
+"?"          { return Token(TokenType::QUESTION,new Location(loc));       }
+"="          { return Token(TokenType::ASSIGN,new Location(loc));       }
+"=="          { return Token(TokenType::EQU,new Location(loc));       }
+"!="          { return Token(TokenType::NEQ,new Location(loc));       }
+"<="          { return Token(TokenType::LEQ,new Location(loc));       }
+">="          { return Token(TokenType::GEQ,new Location(loc));       }
+"<"          { return Token(TokenType::LT,new Location(loc));       }
+">"          { return Token(TokenType::GT,new Location(loc));       }
+"&&"          { return Token(TokenType::AND,new Location(loc));       }
+"||"          { return Token(TokenType::OR,new Location(loc));       }
 
-{INTEGER}     {return make_ICONST(yytext, loc);}
+"+"          { return Token(TokenType::PLUS,new Location(loc));       }
+"-"          { return Token(TokenType::MINUS,new Location(loc));       }
+"*"          { return Token(TokenType::TIMES,new Location(loc));       }
+"/"          { return Token(TokenType::DIVIDE,new Location(loc));       }
+"%"          { return Token(TokenType::MODULO,new Location(loc));       }
+"if"         { return Token(TokenType::IF,new Location(loc));       }
+"else"         { return Token(TokenType::ELSE,new Location(loc));        }
 
-{IDENTIFIER}  {return yy::parser::make_IDENTIFIER (yytext, loc); }
+{INTEGER}     {return make_ICONST(yytext,new Location(loc));}
 
-.             { } 
+{IDENTIFIER}  {return Token(TokenType::IDENTIFIER, yytext, new Location(loc)); }
 
+.             { mind::err::issue(new Location(loc),new mind::err::UnrecogCharError(yytext[0])); } 
 %%
 /* SECTION IV: customized section */
-int myline, mycol;
-yy::parser::symbol_type
-make_ICONST (const std::string &s, const yy::parser::location_type& loc)
-{
-  errno = 0;
-  long n = strtol (s.c_str(), NULL, 10);
-  if (! (INT_MIN <= n && n <= INT_MAX && errno != ERANGE))
-    throw yy::parser::syntax_error (loc, "integer is out of range: " + s);
-  return yy::parser::make_ICONST ((int) n, loc);
+inline void
+updateLocation(Location &loc) {
+  loc.line = yylineno;
+  loc.col = loc.col + yyleng;
 }
-void scan_begin(const char* filename){
+
+void set_scanner_input(const char* filename){
   if (NULL == filename)
 	yyin = stdin;
   else
 	yyin = std::fopen(filename, "r");
 }
-void scan_end(){
+void close_scanner_input(){
    if (yyin != stdin)
 	  std::fclose(yyin);
+}
+Token make_ICONST (std::string s, Location* loc)
+{
+  errno = 0;
+  long n = strtol (s.c_str(), NULL, 10);
+  if (! (INT_MIN <= n && n <= INT_MAX && errno != ERANGE))
+    mind::err::issue(loc, new mind::err::IntTooLargeError());
+  return Token (TokenType::ICONST, (int) n, loc);
 }

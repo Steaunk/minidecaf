@@ -10,23 +10,21 @@
 .SUFFIXES: .cpp .o
 
 LEX = flex
-YACC = bison
 DEFINES =
 CXX = g++
 CC = gcc
 INCLUDES = -I .
 CFLAGS = $(INCLUDES) $(DEFINES)  -g -Wall -pipe -DUSING_GCC
 CXXFLAGS = $(INCLUDES) $(DEFINES)  -g -Wall -pipe -DUSING_GCC
-YFLAGS = -dv
 LDFLAGS = -lm -lgc -g
 CSH = bash
 
 # lex.yy.c is usually compiled with -O to speed it up.
+LFLAGS = -8
 
 LEXCFLAGS = -O $(CFLAGS)
 
 SCANNER = scanner.cpp
-PARSER  = parser.cpp parser.hpp location.hh position.hh stack.hh
 AST     = ast/ast.o ast/ast_add_expr.o ast/ast_and_expr.o  ast/ast_or_expr.o\
           ast/ast_assign_expr.o ast/ast_bool_const.o \
           ast/ast_bool_type.o ast/ast_bitnot_expr.o \
@@ -44,7 +42,7 @@ SCOPE   = scope/scope_stack.o scope/scope.o \
           scope/global_scope.o scope/func_scope.o scope/local_scope.o
 TAC     = tac/tac.o tac/trans_helper.o tac/flow_graph.o
 ASM     = asm/offset_counter.o asm/riscv_md.o asm/riscv_frame_manager.o
-FRONTEND = scanner.o parser.o
+FRONTEND = scanner.o frontend/myparser.o
 TRANSLATION     = translation/translation.o translation/build_sym.o translation/type_check.o
 DATAFLOW = tac/dataflow.o
 OBJS    = main.o compiler.o \
@@ -59,8 +57,6 @@ all:	$(SCANNER) $(PARSER) $(OBJS)
 $(SCANNER): frontend/scanner.l
 	$(LEX) $(LFLAGS) $<
 
-$(PARSER): frontend/parser.y
-	$(YACC) $(YFLAGS) $<
 
 clean:
 	rm -f mind *.o *.output $(SCANNER) $(PARSER) $(OBJS)
@@ -83,10 +79,10 @@ misc.o: config.hpp 3rdparty/boehmgc.hpp define.hpp 3rdparty/list.hpp
 misc.o: error.hpp location.hpp
 options.o: config.hpp 3rdparty/boehmgc.hpp define.hpp 3rdparty/list.hpp
 options.o: error.hpp options.hpp
-parser.o: config.hpp 3rdparty/boehmgc.hpp define.hpp 3rdparty/list.hpp
-parser.o: error.hpp ast/ast.hpp location.hpp compiler.hpp
+frontend/myparser.o: config.hpp 3rdparty/boehmgc.hpp define.hpp 3rdparty/list.hpp frontend/myparser.hpp frontend/myparser.cpp
+frontend/myparser.o: error.hpp ast/ast.hpp location.hpp compiler.hpp
 scanner.o: config.hpp 3rdparty/boehmgc.hpp define.hpp 3rdparty/list.hpp
-scanner.o: error.hpp ast/ast.hpp parser.hpp location.hpp
+scanner.o: error.hpp ast/ast.hpp frontend/myparser.hpp location.hpp
 ast/ast.o: config.hpp 3rdparty/boehmgc.hpp define.hpp 3rdparty/list.hpp
 ast/ast.o: error.hpp ast/ast.hpp options.hpp location.hpp
 ast/ast_add_expr.o: config.hpp 3rdparty/boehmgc.hpp define.hpp

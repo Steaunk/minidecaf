@@ -97,13 +97,13 @@ void Translation::visit(ast::CallExpr *e){
         expr->accept(this); 
         //tr->genAssign(tr->getNewTempI4(), expr->ATTR(val));
         //e->ATTR(val) = expr->ATTR(val);
-        assert(expr->ATTR(val) != NULL);
+        mind_assert(expr->ATTR(val) != NULL);
     }
     for(auto expr : *(e->expr_list)){
         tr->genParam(expr->ATTR(val)); 
     }
     e->ATTR(val) = tr->genCall(e->ATTR(sym)->getEntryLabel());
-    assert(e->ATTR(val) != NULL);
+    mind_assert(e->ATTR(val) != NULL);
     /*for(auto expr : *(e->expr_list)){
         tr->genPop();
     }*/
@@ -427,7 +427,7 @@ void Translation::visit(ast::VarDecl *decl){
         if(decl->init == NULL)
             tr->genGlobalVarible(decl->name, 0);
         else {
-            assert(decl->init->getKind() == ast::ASTNode::INT_CONST);
+            mind_assert(decl->init->getKind() == ast::ASTNode::INT_CONST);
             tr->genGlobalVarible(decl->name, ((ast::IntConst *)(decl->init))->value);
         }
     }

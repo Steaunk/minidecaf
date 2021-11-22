@@ -97,8 +97,10 @@ void scan_end();
 %nterm<mind::ast::FuncDefn* > FuncDefn
 %nterm<mind::ast::Type*> Type
 %nterm<mind::ast::Statement*> Stmt  ReturnStmt ExprStmt IfStmt  CompStmt WhileStmt DeclStmt ForStmt
-%nterm<mind::ast::Expr*> Expr LvalueExpr ForExpr
+%nterm<mind::ast::Expr*> Expr LvalueExpr ForExpr 
+%nterm<mind::ast::IndexExpr*> IndexExpr
 %nterm<mind::ast::VarRef*> VarRef
+%nterm<mind::ast::DimList* > Index
 /*   SUBSECTION 2.2: associativeness & precedences */
 %left     ASSIGN
 %nonassoc QUESTION
@@ -221,9 +223,18 @@ DeclStmt    : Type IDENTIFIER SEMICOLON
                 { $$ = new ast::VarDecl($2, $1, POS(@1)); }
             | Type IDENTIFIER ASSIGN Expr SEMICOLON 
                 { $$ = new ast::VarDecl($2, $1, $4, POS(@1)); }
-            | Type IDENTIFIER LBRACK ICONST RBRACK SEMICOLON
-                { $$ = new ast::VarDecl($2, $1, $4, POS(@1)); }
+            | Type IDENTIFIER Index SEMICOLON
+                { $$ = new ast::VarDecl($2, $1, $3, POS(@1)); }
             ;
+
+Index       : LBRACK ICONST RBRACK Index 
+                { $$ = $4;
+                  $$->append($2);
+                }
+            | LBRACK ICONST RBRACK
+                { $$ = new ast::DimList();
+                  $$->append($2);
+                }
 
 ReturnStmt  : RETURN Expr SEMICOLON
                 { $$ = new ast::ReturnStmt($2, POS(@1)); }
@@ -234,6 +245,8 @@ ExprStmt    : Expr SEMICOLON
 
 VarRef      : IDENTIFIER
                 { $$ = new ast::VarRef($1, POS(@1)); }
+            | IDENTIFIER IndexExpr
+                { $$ = new ast::VarRef($1, $2, POS(@1)); }
             ;
 
 LvalueExpr  : VarRef
@@ -241,6 +254,12 @@ LvalueExpr  : VarRef
             | VarRef ASSIGN Expr
                 { $$ = new ast::AssignExpr($1, $3, POS(@2)); }
             ;
+            
+
+IndexExpr   : LBRACK Expr RBRACK IndexExpr
+                { $$ = new ast::IndexExpr($2, $4->expr_list, POS(@1)); }
+            | LBRACK Expr RBRACK
+                { $$ = new ast::IndexExpr($2, new ast::ExprList(), POS(@1)); }
 
 ExprList    : Expr
                 { $$ = new ast::ExprList(); 
@@ -259,7 +278,7 @@ Expr        : ICONST
             | IDENTIFIER LPAREN ExprList RPAREN
                 { $$ = new ast::CallExpr($3, $1, POS(@1)); }
             | IDENTIFIER LPAREN RPAREN
-                { $$= new ast::CallExpr(new ast::ExprList(), $1, POS(@1)); }
+                { $$ = new ast::CallExpr(new ast::ExprList(), $1, POS(@1)); }
             | LPAREN Expr RPAREN
                 { $$ = $2; }
             | Expr NEQ Expr

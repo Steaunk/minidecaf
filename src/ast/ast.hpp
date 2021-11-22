@@ -68,6 +68,7 @@ class ASTNode {
         WHILE_STMT,
         FOR_STMT,
         FOD,
+        INDEX_EXPR
     } NodeType;
 
   protected:
@@ -181,7 +182,7 @@ class Program : public ASTNode {
 class VarDecl : public Statement {
   public:
     VarDecl(std::string name, Type *type, Location *l);
-    VarDecl(std::string name, Type *type, int dim, Location *l);
+    VarDecl(std::string name, Type *type, DimList *dim, Location *l);
 
     VarDecl(std::string name, Type *type, Expr *init, Location *l);
     virtual void accept(Visitor *);
@@ -191,6 +192,7 @@ class VarDecl : public Statement {
     std::string name;
     Type *type;
     Expr *init;
+    DimList *dim;
 
     symb::Variable *ATTR(sym); // for semantic analysis
 };
@@ -225,6 +227,17 @@ class CallExpr : public Expr {
     ExprList *expr_list;
     symb::Function *ATTR(sym); // for tac generation
 
+};
+
+class IndexExpr : public Expr {
+  public:
+    IndexExpr(Expr *, ExprList *, Location *l);
+
+    virtual void accept(Visitor *);
+    virtual void dumpTo(std::ostream &);
+
+    ExprList *expr_list;
+    DimList *ATTR(dim);
 };
 
 class FuncOrGlobal {
@@ -433,6 +446,7 @@ class VarRef : public Lvalue {
   public:
     //	  VarRef (Expr* object, SID var_name,Location* l);
     VarRef(std::string var_name, Location *l);
+    VarRef(std::string var_name, IndexExpr *expr, Location* l);
 
     virtual void accept(Visitor *);
     virtual void dumpTo(std::ostream &);
@@ -440,6 +454,7 @@ class VarRef : public Lvalue {
   public:
     Expr *owner; // only to pass compilation, not used
     std::string var;
+    IndexExpr *expr;
 
     symb::Variable *ATTR(sym); // for tac generation
 };

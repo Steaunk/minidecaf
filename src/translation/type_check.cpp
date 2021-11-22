@@ -50,6 +50,7 @@ class SemPass2 : public ast::Visitor {
     virtual void visit(ast::IfExpr *);
     virtual void visit(ast::LvalueExpr *);
     virtual void visit(ast::VarRef *);
+    virtual void visit(ast::IndexExpr *);
     // Visiting statements
     virtual void visit(ast::VarDecl *);
     virtual void visit(ast::CompStmt *);
@@ -340,6 +341,11 @@ void SemPass2::visit(ast::LvalueExpr *e) {
     e->ATTR(type) = e->lvalue->ATTR(type);
 }
 
+void SemPass2::visit(ast::IndexExpr *e) {
+    for(auto e : *(e->expr_list))
+        e->accept(this);
+}
+
 /* Visits an ast::VarRef node.
  *
  * PARAMETERS:
@@ -347,8 +353,8 @@ void SemPass2::visit(ast::LvalueExpr *e) {
  */
 void SemPass2::visit(ast::VarRef *ref) {
     // CASE I: owner is NULL ==> referencing a local var or a member var?
+    if(ref->expr != NULL) ref->expr->accept(this);
     Symbol *v = scopes->lookup(ref->var, ref->getLocation());
-    
     if (NULL == v) {
         issue(ref->getLocation(), new SymbolNotFoundError(ref->var));
         goto issue_error_type;
@@ -357,16 +363,32 @@ void SemPass2::visit(ast::VarRef *ref) {
         issue(ref->getLocation(), new NotVariableError(v));
         goto issue_error_type;
 
-    } else {
+    } else if (!v->getType()->isArrayType() ){
+        if(ref->expr != NULL){
+            issue(ref->getLocation(), new NotArrayError());
+            goto issue_error_type;
+        }
         ref->ATTR(type) = v->getType();
+        
         ref->ATTR(sym) = (Variable *)v;
 
-        if (((Variable *)v)->isLocalVar()) {
-            ref->ATTR(lv_kind) = ast::Lvalue::SIMPLE_VAR;
-        }
+        ref->ATTR(lv_kind) = ast::Lvalue::SIMPLE_VAR;   
         /*else if(((Variable *)v)->isGlobalVar()) {
             ref->ATTR(lv_kind) = ast::Lvalue::
         }*/
+    }
+    else {
+        if(ref->expr == NULL) ref->ATTR(type) = v->getType();
+        else ref->ATTR(type) = ((ArrayType *)v->getType())->getElementType();
+        
+        ref->ATTR(sym) = (Variable *)v;
+
+        if(ref->expr != NULL){
+            ref->ATTR(lv_kind) = ast::Lvalue::ARRAY_ELE;
+
+            ref->expr->ATTR(dim) = ref->ATTR(sym)->getDimList();
+        }
+        else ref->ATTR(lv_kind) = ast::Lvalue::SIMPLE_VAR;
     }
     return;
 

@@ -589,6 +589,16 @@ Tac *Tac::Param(Temp dest) {
     return t;
 }
 
+Tac *Tac::Alloc(Temp dest, int num) {
+    REQUIRE_I4(dest);
+
+    Tac *t = allocateNewTac(Tac::ALLOC);
+    t->op0.var = dest;
+    t->op1.size = num * 4;
+    
+    return t;
+}
+
 /* Creates a Return tac.
  *
  * NOTE:
@@ -816,6 +826,10 @@ void Tac::dump(std::ostream &os) {
 
     case STORE:
         os << "    STORE " << op0.var << " -> " << op1.var << ", " << op1.offset;
+        break;
+    
+    case ALLOC:
+        os << "    " << op0.var << " = ALLOC " << op1.size;
         break;
 
     default:

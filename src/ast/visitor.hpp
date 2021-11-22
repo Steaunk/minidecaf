@@ -52,6 +52,7 @@ class Visitor {
     virtual void visit(NotExpr *) {}
     virtual void visit(BitNotExpr *) {}
     virtual void visit(SubExpr *) {}
+    virtual void visit(IndexExpr *) {}
 
     // Lvalues
     virtual void visit(VarRef *) {}

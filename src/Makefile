@@ -37,7 +37,7 @@ AST     = ast/ast.o ast/ast_add_expr.o ast/ast_and_expr.o  ast/ast_or_expr.o\
           ast/ast_not_expr.o \
           ast/ast_program.o ast/ast_func_defn.o \
           ast/ast_return_stmt.o ast/ast_sub_expr.o \
-          ast/ast_var_decl.o ast/ast_var_ref.o  ast/ast_while_stmt.o ast/ast_comp_stmt.o 
+          ast/ast_var_decl.o ast/ast_var_ref.o  ast/ast_while_stmt.o ast/ast_comp_stmt.o ast/ast_index_expr.o 
 TYPE    = type/type.o type/base_type.o type/array_type.o type/func_type.o
 SYMTAB  = symb/symbol.o symb/variable.o symb/function.o
 SCOPE   = scope/scope_stack.o scope/scope.o \
@@ -145,6 +145,8 @@ ast/ast_var_decl.o: config.hpp 3rdparty/boehmgc.hpp define.hpp
 ast/ast_var_decl.o: 3rdparty/list.hpp error.hpp ast/ast.hpp ast/visitor.hpp
 ast/ast_var_ref.o: config.hpp 3rdparty/boehmgc.hpp define.hpp
 ast/ast_var_ref.o: 3rdparty/list.hpp error.hpp ast/ast.hpp ast/visitor.hpp
+ast/ast_index_expr.o: config.hpp 3rdparty/boehmgc.hpp define.hpp
+ast/ast_index_expr.o: 3rdparty/list.hpp error.hpp ast/ast.hpp ast/visitor.hpp
 tac/flow_graph.o: config.hpp 3rdparty/boehmgc.hpp define.hpp
 tac/flow_graph.o: 3rdparty/list.hpp error.hpp tac/tac.hpp 3rdparty/set.hpp
 tac/flow_graph.o: tac/flow_graph.hpp 3rdparty/vector.hpp asm/mach_desc.hpp

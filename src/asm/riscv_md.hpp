@@ -172,6 +172,8 @@ class RiscvDesc : public MachineDesc {
     void emitPushTac(tac::Tac *);
     // translates a Call TAC into assembly instructions
     void emitCallTac(tac::Tac *);
+    
+    void emitAllocTac(tac::Tac *);
 
     // outputs an instruction
     void emit(std::string, const char *, const char *);

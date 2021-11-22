@@ -81,6 +81,12 @@ Temp TransHelper::getNewTempI4(void) {
     return v;
 }
 
+Temp TransHelper::allocNewTempI4(int size) {
+    Temp v = getNewTempI4();
+    chainUp(Tac::Alloc(v, size));
+    return v;
+}
+
 /* Allocates a new label.
  *
  * RETURNS:
@@ -190,12 +196,13 @@ void TransHelper::endFunc(void) {
     current = NULL;
 }
 
-void TransHelper::genGlobalVarible(std::string name, int value) {
+void TransHelper::genGlobalVarible(std::string name, int value, int size) {
     ptail = ptail->next = new Piece();
     ptail->kind = Piece::GLOBAL;
     ptail->as.globalVar = new GlobalObject();
     ptail->as.globalVar->name = name;
     ptail->as.globalVar->value = value;
+    ptail->as.globalVar->size = size;
 }
 
 /* Appends an Add tac node to the current list.

@@ -178,9 +178,20 @@ void SemPass1::visit(ast::VarDecl *vdecl) {
     Type *t = NULL;
 
     vdecl->type->accept(this);
+    if(vdecl->dim != NULL) {
+        int length = 1;
+        for(int d : *(vdecl->dim)){
+            length *= d;
+        }
+        if(length == 0){
+            issue(vdecl->getLocation(), new ZeroLengthedArrayError());
+            return ;
+        }
+        vdecl->type->ATTR(type) = new ArrayType(vdecl->type->ATTR(type), length);
+    }
     t = vdecl->type->ATTR(type);
 
-    vdecl->ATTR(sym) = new Variable(vdecl->name, t, vdecl->getLocation());
+    vdecl->ATTR(sym) = new Variable(vdecl->name, t, vdecl->dim, vdecl->getLocation());
     Symbol *s = scopes->lookup(vdecl->name, vdecl->getLocation(), 0);
     if(s != NULL){
         issue(vdecl->getLocation(),

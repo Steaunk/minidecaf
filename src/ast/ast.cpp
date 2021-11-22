@@ -56,7 +56,8 @@ const char *ASTNode::node_name[] = {"add",
                                     "varref",
                                     "while",
                                     "for",
-                                    "FuncOrDecl"};
+                                    "FuncOrDecl",
+                                    "index"};
 
 /*  Whether to print the decorated abstract syntax tree.
  */

@@ -127,12 +127,12 @@ void RiscvDesc::emitPieces(scope::GlobalScope *gscope, Piece *ps,
         case Piece::GLOBAL:
             emit(EMPTY_STR, ".data", NULL);
             emit(EMPTY_STR, ((std::string)(".global ") + ps->as.globalVar->name).c_str(), NULL);
-            emit(EMPTY_STR, ((std::string)(".size ") + ps->as.globalVar->name + (std::string)(", ") + std::to_string(ps->as.globalVar->size * 10)).c_str(), NULL);
+            emit(EMPTY_STR, ((std::string)(".size ") + ps->as.globalVar->name + (std::string)(", ") + std::to_string(ps->as.globalVar->size)).c_str(), NULL);
             emit(ps->as.globalVar->name.c_str(), NULL, NULL);
             if(ps->as.globalVar->value != 0){
                 emit(EMPTY_STR, ((std::string)(".word ") + std::to_string(ps->as.globalVar->value)).c_str(), NULL);
             }
-            else emit(EMPTY_STR, ((std::string)(".zero ") + std::to_string(ps->as.globalVar->size * 10)).c_str(), NULL);
+            else emit(EMPTY_STR, ((std::string)(".zero ") + std::to_string(ps->as.globalVar->size)).c_str(), NULL);
             break;
 
         default:

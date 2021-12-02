@@ -594,7 +594,7 @@ Tac *Tac::Alloc(Temp dest, int num) {
 
     Tac *t = allocateNewTac(Tac::ALLOC);
     t->op0.var = dest;
-    t->op1.size = num * 4;
+    t->op1.size = num;
     
     return t;
 }

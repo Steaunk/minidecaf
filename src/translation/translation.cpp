@@ -424,6 +424,7 @@ void Translation::visit(ast::IndexExpr *e){
     Temp temp = (*expr)->ATTR(val); ++expr;
     for(int i = 1; i < e->expr_list->length(); ++expr, ++dim, ++i){
         (*expr)->accept(this);
+        //printf("<%d>", *dim);
         Temp t = tr->genLoadImm4(*dim);
         temp = tr->genMul(temp, t);
         temp = tr->genAdd(temp, (*expr)->ATTR(val));
@@ -469,6 +470,7 @@ void Translation::visit(ast::VarDecl *decl){
     }
     else {
         if(decl->type->ATTR(type)->isArrayType()){
+            //printf("[%d]\n", decl->type->ATTR(type)->getSize());
             decl->ATTR(sym)->attachTemp(tr->allocNewTempI4(decl->type->ATTR(type)->getSize()));
         }
         else {

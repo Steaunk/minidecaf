@@ -24,7 +24,7 @@ IndexExpr::IndexExpr(Expr *expr, ExprList *expr_list, Location *l) {
 
     setBasicInfo(INDEX_EXPR, l);
     this->expr_list = expr_list;
-    this->expr_list->append(expr);
+    this->expr_list->addAtHead(expr);
 }
 
 /* Visits the current node.

@@ -60,6 +60,7 @@ typedef struct FunctyObject {
 typedef struct GlobalObject {
     std::string name;   
     int value;
+    int size;
 } *GlobalVar;
 
 /** Three address code.
@@ -104,6 +105,7 @@ struct Tac {
         MEMO,
         CALL,
         PARAM,
+        ALLOC,
     } Kind;
 
     // Operand type
@@ -160,6 +162,7 @@ struct Tac {
     static Tac *Memo(const char *);
     static Tac *Call(Temp dest, Label label);
     static Tac *Param(Temp dest);
+    static Tac *Alloc(Temp dest, int num);
 
     // dumps a single tac node to some output stream
     void dump(std::ostream &);

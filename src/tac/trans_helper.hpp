@@ -30,6 +30,7 @@ class TransHelper {
     assembly::OffsetCounter *getOffsetCounter(void);
     // allocates a new int32 temporary variable
     Temp getNewTempI4(void);
+    Temp allocNewTempI4(int);
     // allocates a new label
     Label getNewLabel(void);
     // allocates a new entry Label object for function
@@ -39,7 +40,7 @@ class TransHelper {
     // ends translating a function
     void endFunc(void);
 
-    void genGlobalVarible(std::string, int);
+    void genGlobalVarible(std::string, int, int);
 
     // Arithmetic
     Temp genAdd(Temp, Temp);

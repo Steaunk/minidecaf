@@ -26,6 +26,17 @@ VarRef::VarRef(std::string n, Location *l) {
     setBasicInfo(VAR_REF, l);
 
     var = n;
+    expr = NULL;
+
+    ATTR(sym) = NULL;
+}
+
+VarRef::VarRef(std::string n, IndexExpr *expr, Location *l){
+
+    setBasicInfo(VAR_REF, l);
+    
+    var = n;
+    this->expr = expr;
 
     ATTR(sym) = NULL;
 }
@@ -46,6 +57,9 @@ void VarRef::dumpTo(std::ostream &os) {
     ASTNode::dumpTo(os);
     os << " " << '"' << var << '"';
     newLine(os);
+    if(NULL != expr){
+        os << expr;
+    }
     //if (NULL != owner)
     //    os << owner << ")";
     //else

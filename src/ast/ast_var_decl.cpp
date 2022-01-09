@@ -27,6 +27,7 @@ VarDecl::VarDecl(std::string n, Type *t, Location *l) {
     name = n;
     type = t;
     init = NULL;
+    dim = NULL;
 }
 
 VarDecl::VarDecl(std::string n, Type *t, Expr *i, Location *l) {
@@ -35,16 +36,18 @@ VarDecl::VarDecl(std::string n, Type *t, Expr *i, Location *l) {
     name = n;
     type = t;
     init = i;
+    dim = NULL;
 }
 
-VarDecl::VarDecl(std::string n, Type *t, int d, Location *l) {
-
+VarDecl::VarDecl(std::string n, Type *t, DimList *d, Location *l) {
     setBasicInfo(VAR_DECL, l);
 
     name = n;
     type = t;
     init = NULL;
+    dim = d;
 }
+
 
 /* Visits the current node.
  *

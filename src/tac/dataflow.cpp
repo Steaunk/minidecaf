@@ -70,6 +70,7 @@ void BasicBlock::computeDefAndLiveUse(void) {
             break;
 
         case Tac::POP:
+        case Tac::ALLOC:
         case Tac::LOAD_IMM4:
         case Tac::LOAD_SYMBOL:
             updateDEF(t->op0.var);
@@ -228,6 +229,7 @@ void BasicBlock::analyzeLiveness(void) {
             break;
 
         case Tac::POP:
+        case Tac::ALLOC:
         case Tac::LOAD_IMM4:
         case Tac::LOAD_SYMBOL:
             if (NULL != t_next->op0.var)

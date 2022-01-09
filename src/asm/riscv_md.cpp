@@ -127,8 +127,12 @@ void RiscvDesc::emitPieces(scope::GlobalScope *gscope, Piece *ps,
         case Piece::GLOBAL:
             emit(EMPTY_STR, ".data", NULL);
             emit(EMPTY_STR, ((std::string)(".global ") + ps->as.globalVar->name).c_str(), NULL);
+            emit(EMPTY_STR, ((std::string)(".size ") + ps->as.globalVar->name + (std::string)(", ") + std::to_string(ps->as.globalVar->size)).c_str(), NULL);
             emit(ps->as.globalVar->name.c_str(), NULL, NULL);
-            emit(EMPTY_STR, ((std::string)(".word ") + std::to_string(ps->as.globalVar->value)).c_str(), NULL);
+            if(ps->as.globalVar->value != 0){
+                emit(EMPTY_STR, ((std::string)(".word ") + std::to_string(ps->as.globalVar->value)).c_str(), NULL);
+            }
+            else emit(EMPTY_STR, ((std::string)(".zero ") + std::to_string(ps->as.globalVar->size)).c_str(), NULL);
             break;
 
         default:
@@ -325,6 +329,10 @@ void RiscvDesc::emitTac(Tac *t) {
     case Tac::STORE:
         emitStoreTac(t);
         break;
+    
+    case Tac::ALLOC:
+        emitAllocTac(t);
+        break;
 
     default:
         printf("%d ????\n", t->op_code);
@@ -383,6 +391,14 @@ void RiscvDesc::emitPushTac(Tac *t) {
     int r1 = getRegForRead(t->op0.var, 0, t->LiveOut);
     addInstr(RiscvInstr::ADDI, _reg[RiscvReg::SP], _reg[RiscvReg::SP], NULL, -4, EMPTY_STR, NULL);
     addInstr(RiscvInstr::SW,  _reg[r1], _reg[RiscvReg::SP], NULL, 0, EMPTY_STR, NULL);
+}
+
+void RiscvDesc::emitAllocTac(Tac *t) {
+    if (!t->LiveOut->contains(t->op0.var))
+        return;
+    int r0 = getRegForWrite(t->op0.var, 0, 0, t->LiveOut);
+    addInstr(RiscvInstr::ADDI, _reg[RiscvReg::SP], _reg[RiscvReg::SP], NULL, -t->op1.size, EMPTY_STR, NULL);
+    addInstr(RiscvInstr::MOVE, _reg[r0], _reg[RiscvReg::SP], NULL, 0, EMPTY_STR, NULL);
 }
 
 /*void RiscvDesc::emitPopTac(Tac *t) {

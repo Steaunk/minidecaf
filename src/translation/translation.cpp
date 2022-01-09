@@ -117,8 +117,15 @@ void Translation::visit(ast::CallExpr *e){
 void Translation::visit(ast::AssignExpr *s) {
     s->left->accept(this);
     s->e->accept(this);
-    Temp temp = ((ast::VarRef *)(s->left))->ATTR(sym)->getTemp();
-    tr->genAssign(temp, s->e->ATTR(val));
+    ast::VarRef *ref = (ast::VarRef *)(s->left);
+    if(ref->ATTR(sym)->isGlobalVar()){
+        Temp temp = tr->genLoadSymbol(ref->var);
+        tr->genStore(s->e->ATTR(val), temp, 0);
+    }
+    else{
+        Temp temp = ref->ATTR(sym)->getTemp();
+        tr->genAssign(temp, s->e->ATTR(val)); 
+    }
     s->ATTR(val) = s->e->ATTR(val);
 }
 

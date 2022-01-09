@@ -74,6 +74,7 @@ class TransHelper {
     Temp genLoadImm4(int);
     Temp genLoadSymbol(std::string);
     Temp genLoad(Temp, int);
+    void genStore(Temp, Temp, int);
     void genMarkLabel(Label);
     void genMemo(const char *);
 

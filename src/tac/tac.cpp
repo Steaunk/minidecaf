@@ -495,6 +495,17 @@ Tac *Tac::Load(Temp dest, Temp src, int offset) {
     return t;
 }
 
+Tac *Tac::Store(Temp src, Temp base, int offset) {
+    REQUIRE_I4(src);
+    REQUIRE_I4(base);
+
+    Tac *t = allocateNewTac(Tac::STORE);
+    t->op0.var = src;
+    t->op1.var = base;
+    t->op1.offset = offset;
+    return t;
+}
+
 /* Creates a Jump tac.
  *
  * NOTE:
@@ -801,6 +812,10 @@ void Tac::dump(std::ostream &os) {
 
     case PARAM:
         os << "    PARAM " << op0.var;
+        break;
+
+    case STORE:
+        os << "    STORE " << op0.var << " -> " << op1.var << ", " << op1.offset;
         break;
 
     default:
